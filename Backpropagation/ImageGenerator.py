@@ -56,16 +56,10 @@ class ImageGenerator:
         ]
 
     @staticmethod
-    def _generate_circle(
-        side_length: int, figure_size: int, centered: bool, noise: float
-    ):
+    def _generate_circle(side_length: int, figure_size: int, center: Tuple[float]):
         """
         Generates a circle
         """
-        center = ImageGenerator._calculate_figure_center(
-            side_length, figure_size, centered
-        )
-
         image = np.zeros((side_length, side_length))
 
         for x, y in product(range(side_length), range(side_length)):
@@ -76,21 +70,16 @@ class ImageGenerator:
                 rel_tol=ImageGenerator._get_relative_tolerance(figure_size),
             ):
                 image[x, y] = 1
-        return ImageGenerator._add_noise(image, noise)
+        return image
 
     @staticmethod
-    def _generate_cross(
-        side_length: int, figure_size: int, centered: bool, noise: float
-    ):
+    def _generate_cross(side_length: int, figure_size: int, center: Tuple[float]):
         """
         Generates a cross
         """
-        center = ImageGenerator._calculate_figure_center(
-            side_length, figure_size, centered
-        )
-
         image = np.zeros((side_length, side_length))
         tolerance = ImageGenerator._get_relative_tolerance(figure_size) * 10
+
         for x, y in product(range(side_length), range(side_length)):
             center_distance = ImageGenerator._distance((x, y), center)
             if center_distance <= figure_size and (
@@ -99,7 +88,7 @@ class ImageGenerator:
             ):
                 image[x, y] = 1
 
-        return ImageGenerator._add_noise(image, noise)
+        return image
 
     @staticmethod
     def _generate_random_figure(
@@ -108,14 +97,20 @@ class ImageGenerator:
         """
         Generates a random figure.
         """
+        center = ImageGenerator._calculate_figure_center(
+            side_length, figure_size, centered
+        )
+
         figure_generation_functions = [
             ImageGenerator._generate_circle,
             ImageGenerator._generate_cross,
         ]
 
-        return random.choice(figure_generation_functions)(
-            side_length, figure_size, centered, noise
+        image = random.choice(figure_generation_functions)(
+            side_length, figure_size, center
         )
+
+        return ImageGenerator._add_noise(image, noise)
 
     @staticmethod
     def _conditional_flatten(image_set, flatten: bool):
