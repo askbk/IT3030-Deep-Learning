@@ -3,6 +3,7 @@ import random
 import math
 import numpy as np
 from itertools import product
+from typing import Tuple
 
 
 class ImageGenerator:
@@ -11,14 +12,14 @@ class ImageGenerator:
     """
 
     @staticmethod
-    def _get_relative_tolerance(figure_size):
+    def _get_relative_tolerance(figure_size: int):
         """
         Relative tolerance to use when drawing figures
         """
         return 0.3 / math.log2(figure_size)
 
     @staticmethod
-    def _calculate_figure_center(side_length, figure_size, centered):
+    def _calculate_figure_center(side_length: int, figure_size: int, centered: bool):
         """
         Calculate the center for a figure.
         """
@@ -35,7 +36,7 @@ class ImageGenerator:
         )
 
     @staticmethod
-    def _distance(point_a, point_b):
+    def _distance(point_a: Tuple[int], point_b: Tuple[int]):
         """
         Calculate distance between points in 2D
         """
@@ -45,7 +46,19 @@ class ImageGenerator:
         return math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
 
     @staticmethod
-    def _generate_circle(side_length, figure_size, centered):
+    def _add_noise(image, noise):
+        """
+        Return the image with added noise
+        """
+        return [
+            [pixel if random.random() > noise else 1 - pixel for pixel in row]
+            for row in image
+        ]
+
+    @staticmethod
+    def _generate_circle(
+        side_length: int, figure_size: int, centered: bool, noise: float
+    ):
         """
         Generates a circle
         """
@@ -63,10 +76,10 @@ class ImageGenerator:
                 rel_tol=ImageGenerator._get_relative_tolerance(figure_size),
             ):
                 image[x, y] = 1
-        return image
+        return ImageGenerator._add_noise(image, noise)
 
     @staticmethod
-    def _conditional_flatten(image_set, flatten):
+    def _conditional_flatten(image_set, flatten: bool):
         """
         Flattens the image set if flatten is True.
         """
@@ -82,6 +95,7 @@ class ImageGenerator:
         side_length=10,
         flatten=False,
         centered=False,
+        noise=0.003,
     ):
         """
         Generates images.
@@ -100,6 +114,7 @@ class ImageGenerator:
                 side_length=side_length,
                 figure_size=random.randint(5, 50),
                 centered=centered,
+                noise=noise,
             )
             for i in range(image_set_size)
         ]
