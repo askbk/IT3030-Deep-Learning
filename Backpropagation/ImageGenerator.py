@@ -60,17 +60,27 @@ class ImageGenerator:
         """
         Generates a circle
         """
-        image = np.zeros((side_length, side_length))
         tolerance = ImageGenerator._get_relative_tolerance(figure_size)
-        for x, y in product(range(side_length), range(side_length)):
+
+        def should_be_colored(x, y):
             center_distance = ImageGenerator._distance((x, y), center)
-            if math.isclose(
+            return math.isclose(
                 figure_size / 2,
                 center_distance,
                 rel_tol=tolerance,
-            ):
-                image[x, y] = 1
-        return image
+            )
+
+        return list(
+            map(
+                lambda x: list(
+                    map(
+                        lambda y: 1 if should_be_colored(x, y) else 0,
+                        range(side_length),
+                    )
+                ),
+                range(side_length),
+            ),
+        )
 
     @staticmethod
     def _generate_cross(side_length: int, figure_size: int, center: Tuple[float]):
