@@ -1,5 +1,6 @@
 from ImageGenerator import ImageGenerator
 import pytest
+from itertools import chain
 
 
 def test_image_generator_constructor():
@@ -66,3 +67,16 @@ def test_invalid_image_set_fraction_throws_exception():
 
     with pytest.raises(ValueError):
         ImageGenerator().generate(image_set_fractions=(0.2, 0.2, 0.2))
+
+
+def test_images_are_binary_arrays():
+    training, validation, test = ImageGenerator().generate()
+
+    assert all(
+        map(
+            lambda image: all(
+                map(lambda pixel: pixel == 1 or pixel == 0, chain.from_iterable(image))
+            ),
+            [*training, *validation, *test],
+        )
+    )
