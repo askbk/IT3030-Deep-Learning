@@ -29,9 +29,7 @@ class ImageGenerator:
             return half, half
 
         wiggle = (side_length - figure_size) / 2
-        # print(
-        #     f"wiggle for side length {side_length} and figure size {figure_size}: {wiggle}"
-        # )
+
         return (
             half + random.uniform(-wiggle, wiggle),
             half + random.uniform(-wiggle, wiggle),
@@ -104,6 +102,22 @@ class ImageGenerator:
         return ImageGenerator._add_noise(image, noise)
 
     @staticmethod
+    def _generate_random_figure(
+        side_length: int, figure_size: int, centered: bool, noise: float
+    ):
+        """
+        Generates a random figure.
+        """
+        figure_generation_functions = [
+            ImageGenerator._generate_circle,
+            ImageGenerator._generate_cross,
+        ]
+
+        return random.choice(figure_generation_functions)(
+            side_length, figure_size, centered, noise
+        )
+
+    @staticmethod
     def _conditional_flatten(image_set, flatten: bool):
         """
         Flattens the image set if flatten is True.
@@ -134,7 +148,7 @@ class ImageGenerator:
             raise ValueError("All image set fractions must be numbers between 0 and 1.")
 
         image_set = [
-            ImageGenerator._generate_cross(
+            ImageGenerator._generate_random_figure(
                 side_length=side_length,
                 figure_size=random.randint(5, 50),
                 centered=centered,
