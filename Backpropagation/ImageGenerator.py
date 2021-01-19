@@ -61,13 +61,13 @@ class ImageGenerator:
         Generates a circle
         """
         image = np.zeros((side_length, side_length))
-
+        tolerance = ImageGenerator._get_relative_tolerance(figure_size)
         for x, y in product(range(side_length), range(side_length)):
             center_distance = ImageGenerator._distance((x, y), center)
             if math.isclose(
                 figure_size / 2,
                 center_distance,
-                rel_tol=ImageGenerator._get_relative_tolerance(figure_size),
+                rel_tol=tolerance,
             ):
                 image[x, y] = 1
         return image
