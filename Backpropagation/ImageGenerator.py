@@ -136,6 +136,60 @@ class ImageGenerator:
         )
 
     @staticmethod
+    def _generate_triangle(side_length: int, figure_size: int, center: Tuple[float]):
+        """
+        Generates a triangle
+        """
+        # leg_tolerance = 5 / math.log2(figure_size)
+        leg_tolerance = math.sqrt(figure_size * 1.1) * 0.4
+        base_tolerance = math.sqrt(figure_size * 0.5) * 0.3
+
+        half_figure_side_lengths = [
+            figure_size // 2,
+            random.randint(figure_size // 3, figure_size // 2),
+        ]
+
+        def get_slope(point_a, point_b):
+            return (point_b[1] - point_a[1]) / (point_b[0] - point_a[0])
+
+        def get_constant(point, slope):
+            return point[1] - slope * point[0]
+
+        v_deviation, h_deviation = random.sample(half_figure_side_lengths, k=2)
+        top = (center[0], center[1] + v_deviation)
+        left = (center[0] - h_deviation, center[1] - v_deviation)
+        right = (center[0] + h_deviation, center[1] - v_deviation)
+        left_slope = get_slope(left, top)
+        left_constant = get_constant(left, left_slope)
+        right_slope = get_slope(top, right)
+        right_constant = get_constant(top, right_slope)
+
+        def is_on_left_leg(x, y):
+            return (
+                math.isclose(y, left_slope * x + left_constant, abs_tol=leg_tolerance)
+                and left[0] <= x <= top[0]
+            )
+
+        def is_on_right_leg(x, y):
+            return (
+                math.isclose(y, right_slope * x + right_constant, abs_tol=leg_tolerance)
+                and top[0] <= x <= right[0]
+            )
+
+        def is_on_base(x, y):
+            return (
+                math.isclose(y, center[1] - v_deviation, abs_tol=base_tolerance)
+                and left[0] <= x <= right[0]
+            )
+
+        def should_be_colored(x, y):
+            return is_on_left_leg(x, y) or is_on_right_leg(x, y) or is_on_base(x, y)
+
+        return ImageGenerator._generate_generic_figure(
+            side_length, figure_function=should_be_colored
+        )
+
+    @staticmethod
     def _generate_random_figure(
         side_length: int, figure_size: int, centered: bool, noise: float
     ):
@@ -150,6 +204,7 @@ class ImageGenerator:
             ImageGenerator._generate_circle,
             ImageGenerator._generate_cross,
             ImageGenerator._generate_rectangle,
+            ImageGenerator._generate_triangle,
         ]
 
         image = random.choice(figure_generation_functions)(
