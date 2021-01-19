@@ -127,11 +127,7 @@ class ImageGenerator:
                 math.isclose(v_distance, v_deviation, abs_tol=tolerance)
                 and lte(h_distance, h_deviation)
             ) or (
-                math.isclose(
-                    h_distance,
-                    h_deviation,
-                    abs_tol=tolerance,
-                )
+                math.isclose(h_distance, h_deviation, abs_tol=tolerance)
                 and lte(v_distance, v_deviation)
             )
 
