@@ -56,6 +56,24 @@ class ImageGenerator:
         ]
 
     @staticmethod
+    def _generate_generic_figure(side_length, figure_function):
+        """
+        Colors a pixel if figure_function(x, y) is true.
+        """
+
+        return list(
+            map(
+                lambda x: list(
+                    map(
+                        lambda y: 1 if figure_function(x, y) else 0,
+                        range(side_length),
+                    )
+                ),
+                range(side_length),
+            ),
+        )
+
+    @staticmethod
     def _generate_circle(side_length: int, figure_size: int, center: Tuple[float]):
         """
         Generates a circle
@@ -70,16 +88,8 @@ class ImageGenerator:
                 rel_tol=tolerance,
             )
 
-        return list(
-            map(
-                lambda x: list(
-                    map(
-                        lambda y: 1 if should_be_colored(x, y) else 0,
-                        range(side_length),
-                    )
-                ),
-                range(side_length),
-            ),
+        return ImageGenerator._generate_generic_figure(
+            side_length, figure_function=should_be_colored
         )
 
     @staticmethod
@@ -87,18 +97,18 @@ class ImageGenerator:
         """
         Generates a cross
         """
-        image = np.zeros((side_length, side_length))
         tolerance = ImageGenerator._get_relative_tolerance(figure_size) * 10
 
-        for x, y in product(range(side_length), range(side_length)):
+        def should_be_colored(x, y):
             center_distance = ImageGenerator._distance((x, y), center)
-            if center_distance <= figure_size and (
+            return center_distance <= figure_size and (
                 math.isclose(x, center[0], abs_tol=tolerance)
                 or math.isclose(y, center[1], abs_tol=tolerance)
-            ):
-                image[x, y] = 1
+            )
 
-        return image
+        return ImageGenerator._generate_generic_figure(
+            side_length, figure_function=should_be_colored
+        )
 
     @staticmethod
     def _generate_random_figure(
