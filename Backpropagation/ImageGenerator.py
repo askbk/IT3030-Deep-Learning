@@ -15,6 +15,16 @@ class ImageGenerator:
     ):
         pass
 
+    @staticmethod
+    def _conditional_flatten(image_set, flatten):
+        """
+        Flattens the image set if flatten is True.
+        """
+        if not flatten:
+            return image_set
+
+        return list(map(lambda image: list(chain.from_iterable(image)), image_set))
+
     def generate(
         self,
         image_set_size=100,
@@ -35,15 +45,8 @@ class ImageGenerator:
         validation_set = image_set[training_index : validation_index + 1]
         test_set = image_set[validation_index + 1 :]
 
-        if not flatten:
-            return (
-                training_set,
-                validation_set,
-                test_set,
-            )
-
         return (
-            list(map(lambda image: list(chain.from_iterable(image)), training_set)),
-            list(map(lambda image: list(chain.from_iterable(image)), validation_set)),
-            list(map(lambda image: list(chain.from_iterable(image)), test_set)),
+            ImageGenerator._conditional_flatten(training_set, flatten),
+            ImageGenerator._conditional_flatten(validation_set, flatten),
+            ImageGenerator._conditional_flatten(test_set, flatten),
         )
