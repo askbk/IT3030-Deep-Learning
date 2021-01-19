@@ -29,7 +29,9 @@ class ImageGenerator:
             return half, half
 
         wiggle = (side_length - figure_size) / 2
-
+        # print(
+        #     f"wiggle for side length {side_length} and figure size {figure_size}: {wiggle}"
+        # )
         return (
             half + random.uniform(-wiggle, wiggle),
             half + random.uniform(-wiggle, wiggle),
@@ -79,6 +81,29 @@ class ImageGenerator:
         return ImageGenerator._add_noise(image, noise)
 
     @staticmethod
+    def _generate_cross(
+        side_length: int, figure_size: int, centered: bool, noise: float
+    ):
+        """
+        Generates a cross
+        """
+        center = ImageGenerator._calculate_figure_center(
+            side_length, figure_size, centered
+        )
+
+        image = np.zeros((side_length, side_length))
+        tolerance = ImageGenerator._get_relative_tolerance(figure_size) * 10
+        for x, y in product(range(side_length), range(side_length)):
+            center_distance = ImageGenerator._distance((x, y), center)
+            if center_distance <= figure_size and (
+                math.isclose(x, center[0], abs_tol=tolerance)
+                or math.isclose(y, center[1], abs_tol=tolerance)
+            ):
+                image[x, y] = 1
+
+        return ImageGenerator._add_noise(image, noise)
+
+    @staticmethod
     def _conditional_flatten(image_set, flatten: bool):
         """
         Flattens the image set if flatten is True.
@@ -108,9 +133,8 @@ class ImageGenerator:
         if not (0 <= training <= 1 and 0 <= validation <= 1 and 0 <= test <= 1):
             raise ValueError("All image set fractions must be numbers between 0 and 1.")
 
-        image_set = [[[0] * side_length] * side_length] * image_set_size
         image_set = [
-            ImageGenerator._generate_circle(
+            ImageGenerator._generate_cross(
                 side_length=side_length,
                 figure_size=random.randint(5, 50),
                 centered=centered,
