@@ -115,32 +115,24 @@ class ImageGenerator:
             random.randint(figure_size // 4, figure_size // 2),
         ]
 
-        vertical_deviation, horizontal_deviation = random.sample(
-            half_figure_side_lengths, k=2
-        )
-
-        def horizontal_distance(point_a, point_b):
-            return abs(point_a[0] - point_b[0])
-
-        def vertical_distance(point_a, point_b):
-            return abs(point_a[1] - point_b[1])
+        v_deviation, h_deviation = random.sample(half_figure_side_lengths, k=2)
 
         def lte(a, b):
             return a <= b or math.isclose(a, b, abs_tol=tolerance)
 
         def should_be_colored(x, y):
-            v_distance = vertical_distance((x, y), center)
-            h_distance = horizontal_distance((x, y), center)
-            is_on_vertical = math.isclose(
-                v_distance, vertical_deviation, abs_tol=tolerance
-            )
-            is_on_horizontal = math.isclose(
-                h_distance,
-                horizontal_deviation,
-                abs_tol=tolerance,
-            )
-            return (is_on_horizontal and lte(v_distance, vertical_deviation)) or (
-                is_on_vertical and lte(h_distance, horizontal_deviation)
+            v_distance = abs(y - center[1])
+            h_distance = abs(x - center[0])
+            return (
+                math.isclose(v_distance, v_deviation, abs_tol=tolerance)
+                and lte(h_distance, h_deviation)
+            ) or (
+                math.isclose(
+                    h_distance,
+                    h_deviation,
+                    abs_tol=tolerance,
+                )
+                and lte(v_distance, v_deviation)
             )
 
         return ImageGenerator._generate_generic_figure(
