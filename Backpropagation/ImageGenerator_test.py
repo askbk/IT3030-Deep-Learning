@@ -3,16 +3,6 @@ import pytest
 from itertools import chain
 
 
-def test_image_generator_constructor():
-    ImageGenerator()
-    ImageGenerator(
-        side_length=10,
-        noise=0.1,
-        figure_size_range=(7, 10),
-        flatten=False,
-    )
-
-
 def test_generates_correct_number_of_images():
     training, validation, test = ImageGenerator().generate(image_set_size=50)
     assert len(training) + len(validation) + len(test) == 50
