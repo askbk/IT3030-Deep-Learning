@@ -12,13 +12,6 @@ class ImageGenerator:
     """
 
     @staticmethod
-    def _get_relative_tolerance(figure_size: int):
-        """
-        Relative tolerance to use when drawing figures
-        """
-        return 0.3 / math.log2(figure_size)
-
-    @staticmethod
     def _calculate_figure_center(side_length: int, figure_size: int, centered: bool):
         """
         Calculate the center for a figure.
@@ -78,7 +71,7 @@ class ImageGenerator:
         """
         Generates a circle
         """
-        tolerance = ImageGenerator._get_relative_tolerance(figure_size)
+        tolerance = 0.3 / math.log2(figure_size)
 
         def should_be_colored(x, y):
             center_distance = ImageGenerator._distance((x, y), center)
@@ -97,13 +90,13 @@ class ImageGenerator:
         """
         Generates a cross
         """
-        tolerance = ImageGenerator._get_relative_tolerance(figure_size) * 10
+        tolerance = math.log2(figure_size) * 0.01
 
         def should_be_colored(x, y):
             center_distance = ImageGenerator._distance((x, y), center)
             return center_distance <= figure_size and (
-                math.isclose(x, center[0], abs_tol=tolerance)
-                or math.isclose(y, center[1], abs_tol=tolerance)
+                math.isclose(x, center[0], rel_tol=tolerance)
+                or math.isclose(y, center[1], rel_tol=tolerance)
             )
 
         return ImageGenerator._generate_generic_figure(
