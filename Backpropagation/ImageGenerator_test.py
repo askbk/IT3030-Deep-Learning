@@ -26,3 +26,15 @@ def test_generates_correct_set_fractions():
     assert len(training) / total == 0.7
     assert len(validation) / total == 0.2
     assert len(test) / total == 0.1
+
+
+def test_correct_side_length():
+    side_length = 10
+    training, validation, test = ImageGenerator().generate(side_length=side_length)
+
+    assert all(
+        map(
+            lambda image: len(image) == side_length and len(image[0]) == side_length,
+            [*training, *validation, *test],
+        )
+    )

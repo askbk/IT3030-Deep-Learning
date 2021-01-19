@@ -12,13 +12,15 @@ class ImageGenerator:
     ):
         pass
 
-    def generate(self, image_set_size=100, image_set_fractions=(0.7, 0.2, 0.1)):
+    def generate(
+        self, image_set_size=100, image_set_fractions=(0.7, 0.2, 0.1), side_length=10
+    ):
         """
         Generates images.
         """
         training, validation, test = image_set_fractions
         return (
-            [0] * int(image_set_size * training),
-            [0] * int(image_set_size * validation),
-            [0] * int(image_set_size * test),
+            [[[0] * side_length] * side_length] * int(image_set_size * training),
+            [[[0] * side_length] * side_length] * int(image_set_size * validation),
+            [[[0] * side_length] * side_length] * int(image_set_size * test),
         )
