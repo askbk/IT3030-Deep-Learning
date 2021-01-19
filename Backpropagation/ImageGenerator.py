@@ -104,6 +104,50 @@ class ImageGenerator:
         )
 
     @staticmethod
+    def _generate_rectangle(side_length: int, figure_size: int, center: Tuple[float]):
+        """
+        Generates a rectangle
+        """
+        tolerance = 1
+
+        half_figure_side_lengths = [
+            figure_size // 2,
+            random.randint(figure_size // 4, figure_size // 2),
+        ]
+
+        vertical_deviation, horizontal_deviation = random.sample(
+            half_figure_side_lengths, k=2
+        )
+
+        def horizontal_distance(point_a, point_b):
+            return abs(point_a[0] - point_b[0])
+
+        def vertical_distance(point_a, point_b):
+            return abs(point_a[1] - point_b[1])
+
+        def lte(a, b):
+            return a <= b or math.isclose(a, b, abs_tol=tolerance)
+
+        def should_be_colored(x, y):
+            v_distance = vertical_distance((x, y), center)
+            h_distance = horizontal_distance((x, y), center)
+            is_on_vertical = math.isclose(
+                v_distance, vertical_deviation, abs_tol=tolerance
+            )
+            is_on_horizontal = math.isclose(
+                h_distance,
+                horizontal_deviation,
+                abs_tol=tolerance,
+            )
+            return (is_on_horizontal and lte(v_distance, vertical_deviation)) or (
+                is_on_vertical and lte(h_distance, horizontal_deviation)
+            )
+
+        return ImageGenerator._generate_generic_figure(
+            side_length, figure_function=should_be_colored
+        )
+
+    @staticmethod
     def _generate_random_figure(
         side_length: int, figure_size: int, centered: bool, noise: float
     ):
@@ -117,6 +161,7 @@ class ImageGenerator:
         figure_generation_functions = [
             ImageGenerator._generate_circle,
             ImageGenerator._generate_cross,
+            ImageGenerator._generate_rectangle,
         ]
 
         image = random.choice(figure_generation_functions)(
