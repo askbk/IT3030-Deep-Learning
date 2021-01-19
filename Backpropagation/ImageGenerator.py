@@ -35,7 +35,13 @@ class ImageGenerator:
         """
         Generates images.
         """
+        if round(sum(image_set_fractions), 5) != 1:
+            raise ValueError("Image set fractions must sum to 1.")
+
         training, validation, test = image_set_fractions
+
+        if not (0 <= training <= 1 and 0 <= validation <= 1 and 0 <= test <= 1):
+            raise ValueError("All image set fractions must be numbers between 0 and 1.")
 
         image_set = [[[0] * side_length] * side_length] * image_set_size
         training_index = int(training * image_set_size)

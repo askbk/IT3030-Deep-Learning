@@ -1,4 +1,5 @@
 from ImageGenerator import ImageGenerator
+import pytest
 
 
 def test_image_generator_constructor():
@@ -54,3 +55,14 @@ def test_flatten():
             [*training, *test, *validation],
         )
     )
+
+
+def test_invalid_image_set_fraction_throws_exception():
+    with pytest.raises(ValueError):
+        ImageGenerator().generate(image_set_fractions=(-1, 2, 0))
+
+    with pytest.raises(ValueError):
+        ImageGenerator().generate(image_set_fractions=(0.6, 0.6, 0.1))
+
+    with pytest.raises(ValueError):
+        ImageGenerator().generate(image_set_fractions=(0.2, 0.2, 0.2))
