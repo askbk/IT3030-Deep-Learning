@@ -46,7 +46,7 @@ class Layer:
         else:
             self._bias = np.zeros(shape=(1, neurons))
 
-        if activation_function not in ("sigmoid", "tanh"):
+        if activation_function not in ("sigmoid", "tanh", "relu"):
             raise ValueError("Invalid activation function.")
 
         self._activation_function = activation_function
@@ -65,6 +65,13 @@ class Layer:
         """
         return np.tanh(X)
 
+    @staticmethod
+    def _relu(X):
+        """
+        Rectified linear unit function
+        """
+        return np.maximum(X, 0)
+
     def _multiply_weights(self, X: np.array):
         return X @ self._weights
 
@@ -81,6 +88,11 @@ class Layer:
 
         if self._activation_function == "tanh":
             return Layer._tanh(data)
+
+        if self._activation_function == "relu":
+            return Layer._relu(data)
+
+        raise NotImplementedError()
 
     def forward_pass(self, data):
         """

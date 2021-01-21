@@ -94,3 +94,18 @@ def test_hyperbolic_tangent_activation():
     expected = np.array([[0.19737532], [-0.09966799], [0.19737532]])
 
     assert np.all(np.isclose(actual, expected))
+
+
+def test_relu_activation():
+    layer = Layer(
+        input_neurons=2,
+        neurons=1,
+        weights=np.array([[0.1], [0.2]]),
+        activation_function="relu",
+        bias=True,
+        bias_weights=np.array([[0.1]]),
+    )
+    data = np.array([[-1, 1], [0, -1], [1, 0]])
+    actual = layer.forward_pass(data)
+    expected = np.array([[0.2], [0], [0.2]])
+    assert np.all(np.isclose(actual, expected))
