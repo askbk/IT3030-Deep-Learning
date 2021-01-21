@@ -17,10 +17,10 @@ def test_forward_pass():
     data = np.array([[0], [1]])
 
     output = layer.forward_pass(data)
-    assert not any(np.isnan(output))
+    assert not np.any(np.isnan(output))
 
 
-def test_forward_pass_correct_output():
+def test_forward_pass_correct_output_base_case():
     layer = Layer(
         input_neurons=1,
         weights=np.array([[1]]),
@@ -28,19 +28,20 @@ def test_forward_pass_correct_output():
         softmax=False,
     )
     actual = layer.forward_pass(np.array([[-1], [0], [1]]))
-    expected = [[0.26894142], [0.5], [0.73105858]]
-    assert all([np.isclose(a, b) for a, b in zip(actual, expected)])
+    expected = np.array([[0.26894142], [0.5], [0.73105858]])
+    assert np.all(np.isclose(actual, expected))
 
+
+def test_forward_pass_correct_output_multiple_input():
     layer = Layer(
         input_neurons=2,
         neurons=1,
-        weights=np.array([[0.1, 0.2]]),
+        weights=np.array([[0.1], [0.2]]),
         activation_function="sigmoid",
         softmax=False,
     )
-    actual = layer.forward_pass(np.array([[-1, 1], [0, -1], [1, 0]]))
+    data = np.array([[-1, 1], [0, -1], [1, 0]])
+    actual = layer.forward_pass(data)
     expected = [[0.52498], [0.45017], [0.52498]]
-    print(actual)
-    assert all(
-        [np.isclose(a, b) for x, y in zip(actual, expected) for a, b in zip(x, y)]
-    )
+
+    assert np.all(np.isclose(actual, expected))

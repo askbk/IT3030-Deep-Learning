@@ -22,7 +22,7 @@ class Layer:
             self._weights = np.random.uniform(
                 low=initial_weight_range[0],
                 high=initial_weight_range[1],
-                size=(neurons, input_neurons),
+                size=(input_neurons, neurons),
             )
 
     @staticmethod
@@ -40,6 +40,8 @@ class Layer:
 
     def forward_pass(self, data):
         """
-        Data is a minibatch of data.
+        Data is a matrix with a minibatch of data.
+        Each test case should be row-oriented.
         """
-        return Layer._sigmoid(np.sum(self._multiply_weights_input(data)))
+        product = self._multiply_weights_input(data)
+        return Layer._sigmoid(np.sum(product, axis=1, keepdims=True))
