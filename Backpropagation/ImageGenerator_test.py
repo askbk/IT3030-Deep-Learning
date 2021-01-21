@@ -60,7 +60,7 @@ def test_invalid_image_set_fraction_throws_exception():
 
 
 def test_images_are_binary_arrays():
-    training, validation, test = ImageGenerator().generate()
+    training, validation, test = ImageGenerator().generate(centered=True)
 
     assert all(
         map(
