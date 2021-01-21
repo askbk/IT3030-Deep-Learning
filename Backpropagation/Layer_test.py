@@ -109,3 +109,18 @@ def test_relu_activation():
     actual = layer.forward_pass(data)
     expected = np.array([[0.2], [0], [0.2]])
     assert np.all(np.isclose(actual, expected))
+
+
+def test_linear_activation():
+    layer = Layer(
+        input_neurons=2,
+        neurons=1,
+        weights=np.array([[0.1], [0.2]]),
+        activation_function="linear",
+        bias=True,
+        bias_weights=np.array([[0.1]]),
+    )
+    data = np.array([[-1, 1], [0, -1], [1, 0]])
+    actual = layer.forward_pass(data)
+    expected = np.array([[0.2], [-0.1], [0.2]])
+    assert np.all(np.isclose(actual, expected))

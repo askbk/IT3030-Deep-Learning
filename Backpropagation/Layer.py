@@ -46,7 +46,7 @@ class Layer:
         else:
             self._bias = np.zeros(shape=(1, neurons))
 
-        if activation_function not in ("sigmoid", "tanh", "relu"):
+        if activation_function not in ("sigmoid", "tanh", "relu", "linear"):
             raise ValueError("Invalid activation function.")
 
         self._activation_function = activation_function
@@ -64,6 +64,13 @@ class Layer:
         Hyperbolic tangent
         """
         return np.tanh(X)
+
+    @staticmethod
+    def _linear(X):
+        """
+        Linear function
+        """
+        return X
 
     @staticmethod
     def _relu(X):
@@ -91,6 +98,9 @@ class Layer:
 
         if self._activation_function == "relu":
             return Layer._relu(data)
+
+        if self._activation_function == "linear":
+            return Layer._linear(data)
 
         raise NotImplementedError()
 
