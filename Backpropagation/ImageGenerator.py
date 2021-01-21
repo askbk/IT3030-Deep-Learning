@@ -3,7 +3,7 @@ import random
 import math
 import numpy as np
 from itertools import product
-from typing import Tuple
+from typing import Tuple, List
 
 
 class ImageGenerator:
@@ -224,6 +224,24 @@ class ImageGenerator:
         return list(map(lambda image: list(chain.from_iterable(image)), image_set))
 
     @staticmethod
+    def _split_image_set(
+        image_set: List, training_set_fraction: float, validation_set_fraction: float
+    ):
+        """
+        Splits an image set according to given subset proportions.
+        """
+        training_index = int(training_set_fraction * len(image_set))
+        validation_index = int(
+            (training_set_fraction + validation_set_fraction) * len(image_set)
+        )
+
+        return (
+            image_set[:training_index],
+            image_set[training_index : validation_index + 1],
+            image_set[validation_index + 1 :],
+        )
+
+    @staticmethod
     def generate(
         image_set_size=100,
         image_set_fractions=(0.7, 0.2, 0.1),
@@ -252,12 +270,12 @@ class ImageGenerator:
             )
             for i in range(image_set_size)
         ]
-        training_index = int(training * image_set_size)
-        validation_index = int((training + validation) * image_set_size)
 
-        training_set = image_set[:training_index]
-        validation_set = image_set[training_index : validation_index + 1]
-        test_set = image_set[validation_index + 1 :]
+        training_set, validation_set, test_set = ImageGenerator._split_image_set(
+            image_set=image_set,
+            training_set_fraction=training,
+            validation_set_fraction=validation,
+        )
 
         return (
             ImageGenerator._conditional_flatten(training_set, flatten),
