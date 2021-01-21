@@ -64,4 +64,5 @@ class Layer:
         """
         product = self._multiply_weights_input(data)
         with_bias = self._add_bias(product)
-        return Layer._sigmoid(np.sum(with_bias, axis=1, keepdims=True))
+
+        return Layer._sigmoid(with_bias)
