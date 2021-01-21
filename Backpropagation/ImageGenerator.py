@@ -275,21 +275,22 @@ class ImageGenerator:
         """
         Generates images.
         """
-        training_set, validation_set, test_set = ImageGenerator._split_image_set(
-            image_set=ImageGenerator._generate_random_figures(
-                side_length=side_length,
-                figure_size_range=(5, 50),
-                centered=centered,
-                noise=noise,
-                image_set_size=image_set_size,
-            ),
-            image_set_fractions=image_set_fractions,
-        )
-
-        return (
-            ImageGenerator._conditional_flatten(training_set, flatten),
-            ImageGenerator._conditional_flatten(validation_set, flatten),
-            ImageGenerator._conditional_flatten(test_set, flatten),
+        return tuple(
+            map(
+                lambda image_set: ImageGenerator._conditional_flatten(
+                    image_set, flatten
+                ),
+                ImageGenerator._split_image_set(
+                    image_set=ImageGenerator._generate_random_figures(
+                        side_length=side_length,
+                        figure_size_range=(5, 50),
+                        centered=centered,
+                        noise=noise,
+                        image_set_size=image_set_size,
+                    ),
+                    image_set_fractions=image_set_fractions,
+                ),
+            )
         )
 
 
