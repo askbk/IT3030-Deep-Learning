@@ -69,7 +69,7 @@ def test_forward_pass_correct_output_with_bias():
         activation_function="sigmoid",
         softmax=False,
         bias=True,
-        bias_weights=np.array([0.1]),
+        bias_weights=np.array([[0.1]]),
     )
     data = np.array([[-1, 1], [0, -1], [1, 0]])
     actual = layer.forward_pass(data)
