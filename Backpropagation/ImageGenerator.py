@@ -242,6 +242,27 @@ class ImageGenerator:
         )
 
     @staticmethod
+    def _generate_random_figures(
+        side_length: int,
+        figure_size_range: Tuple[int],
+        centered: bool,
+        noise: float,
+        image_set_size: int,
+    ):
+        """
+        docstring
+        """
+        return [
+            ImageGenerator._generate_random_figure(
+                side_length=side_length,
+                figure_size=random.randint(5, 50),
+                centered=centered,
+                noise=noise,
+            )
+            for i in range(image_set_size)
+        ]
+
+    @staticmethod
     def generate(
         image_set_size=100,
         image_set_fractions=(0.7, 0.2, 0.1),
@@ -261,15 +282,13 @@ class ImageGenerator:
         if not (0 <= training <= 1 and 0 <= validation <= 1 and 0 <= test <= 1):
             raise ValueError("All image set fractions must be numbers between 0 and 1.")
 
-        image_set = [
-            ImageGenerator._generate_random_figure(
-                side_length=side_length,
-                figure_size=random.randint(5, 50),
-                centered=centered,
-                noise=noise,
-            )
-            for i in range(image_set_size)
-        ]
+        image_set = ImageGenerator._generate_random_figures(
+            side_length=side_length,
+            figure_size_range=(5, 50),
+            centered=centered,
+            noise=noise,
+            image_set_size=image_set_size,
+        )
 
         training_set, validation_set, test_set = ImageGenerator._split_image_set(
             image_set=image_set,
