@@ -1,6 +1,7 @@
 from Network import Network
 from Layer import Layer
 from InputLayer import InputLayer
+from OutputLayer import OutputLayer
 import numpy as np
 
 
@@ -88,3 +89,35 @@ def test_network_with_input_layer():
     expected = np.array([[0.5], [0.549834], [0.450166]])
 
     assert np.all(np.isclose(actual, expected))
+
+
+def test_training_base_case():
+    network = Network(
+        layers=[
+            InputLayer(),
+            Layer(
+                input_neurons=2,
+                neurons=2,
+                activation_function="linear",
+                bias=True,
+            ),
+            Layer(
+                input_neurons=2,
+                neurons=1,
+                activation_function="linear",
+                bias=True,
+            ),
+            OutputLayer(),
+        ],
+        regularization=False,
+        loss_function="mse",
+    )
+
+    X = np.array([[0, 0], [0, 1], [1, 0], [1, 1]])
+    Y = np.array([[0], [1], [1], [0]])
+
+    trained_network = network.train(X, Y, minibatches=2)
+
+    output_after_training = trained_network.forward_pass(X)
+    print(output_after_training, Y)
+    assert np.all(np.isclose(output_after_training, Y))
