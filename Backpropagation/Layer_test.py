@@ -1,5 +1,6 @@
 from Layer import Layer
 import numpy as np
+import pytest
 
 
 def test_layer_constructor():
@@ -11,6 +12,14 @@ def test_layer_constructor():
         softmax=False,
         initial_weight_range=(-0.1, 0.1),
     )
+
+
+def test_layer_correct_weight_dimensions():
+    with pytest.raises(ValueError):
+        Layer(input_neurons=3, neurons=2, weights=np.array([[1, 2], [1, 2]]))
+
+    with pytest.raises(ValueError):
+        Layer(input_neurons=3, neurons=2, weights=np.array([[1, 2, 3], [1, 2, 3]]))
 
 
 def test_forward_pass():

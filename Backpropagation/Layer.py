@@ -19,6 +19,10 @@ class Layer:
     ):
         self._neurons = neurons
         if weights is not None:
+            if weights.shape != (input_neurons, neurons):
+                raise ValueError(
+                    f"weight matrix must have shape ({input_neurons}, {neurons}), was {weights.shape}"
+                )
             self._weights = weights
         else:
             self._weights = np.random.uniform(
