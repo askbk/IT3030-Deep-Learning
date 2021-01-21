@@ -223,8 +223,8 @@ class ImageGenerator:
 
         return list(map(lambda image: list(chain.from_iterable(image)), image_set))
 
+    @staticmethod
     def generate(
-        self,
         image_set_size=100,
         image_set_fractions=(0.7, 0.2, 0.1),
         side_length=10,
