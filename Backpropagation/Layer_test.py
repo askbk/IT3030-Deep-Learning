@@ -78,3 +78,19 @@ def test_forward_pass_correct_output_with_bias():
     expected = np.array([[0.549834], [0.475021], [0.549834]])
 
     assert np.all(np.isclose(actual, expected))
+
+
+def test_hyperbolic_tangent_activation():
+    layer = Layer(
+        input_neurons=2,
+        neurons=1,
+        weights=np.array([[0.1], [0.2]]),
+        activation_function="tanh",
+        bias=True,
+        bias_weights=np.array([[0.1]]),
+    )
+    data = np.array([[-1, 1], [0, -1], [1, 0]])
+    actual = layer.forward_pass(data)
+    expected = np.array([[0.19737532], [-0.09966799], [0.19737532]])
+
+    assert np.all(np.isclose(actual, expected))

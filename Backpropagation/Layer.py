@@ -46,6 +46,11 @@ class Layer:
         else:
             self._bias = np.zeros(shape=(1, neurons))
 
+        if activation_function not in ("sigmoid", "tanh"):
+            raise ValueError("Invalid activation function.")
+
+        self._activation_function = activation_function
+
     @staticmethod
     def _sigmoid(X):
         """
@@ -53,19 +58,35 @@ class Layer:
         """
         return 1 / (1 + np.exp(-X))
 
-    def _multiply_weights_input(self, X: np.array):
+    @staticmethod
+    def _tanh(X):
+        """
+        Hyperbolic tangent
+        """
+        return np.tanh(X)
+
+    def _multiply_weights(self, X: np.array):
         return X @ self._weights
 
     def _add_bias(self, X: np.array):
         bias = np.broadcast_to(self._bias, (X.shape[0], self._bias.shape[1]))
         return X + bias
 
+    def _apply_activation_function(self, data):
+        """
+        Applies the current activation function to the data.
+        """
+        if self._activation_function == "sigmoid":
+            return Layer._sigmoid(data)
+
+        if self._activation_function == "tanh":
+            return Layer._tanh(data)
+
     def forward_pass(self, data):
         """
         Data is a matrix with a minibatch of data.
         Each test case should be row-oriented.
         """
-        product = self._multiply_weights_input(data)
-        with_bias = self._add_bias(product)
-
-        return Layer._sigmoid(with_bias)
+        return self._apply_activation_function(
+            self._add_bias(self._multiply_weights(data))
+        )
