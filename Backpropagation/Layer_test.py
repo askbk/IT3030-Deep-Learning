@@ -9,7 +9,6 @@ def test_layer_constructor():
         input_neurons=55,
         neurons=5,
         activation_function="sigmoid",
-        softmax=False,
         initial_weight_range=(-0.1, 0.1),
     )
 
@@ -42,7 +41,6 @@ def test_forward_pass_correct_output_base_case():
         neurons=1,
         weights=np.array([[1]]),
         activation_function="sigmoid",
-        softmax=False,
         bias=False,
     )
     actual = layer.forward_pass(np.array([[-1], [0], [1]]))
@@ -57,7 +55,6 @@ def test_forward_pass_correct_output_multiple_input():
         neurons=1,
         weights=np.array([[0.1], [0.2]]),
         activation_function="sigmoid",
-        softmax=False,
         bias=False,
     )
     data = np.array([[-1, 1], [0, -1], [1, 0]])
@@ -73,7 +70,6 @@ def test_forward_pass_correct_output_with_bias():
         neurons=1,
         weights=np.array([[0.1], [0.2]]),
         activation_function="sigmoid",
-        softmax=False,
         bias=True,
         bias_weights=np.array([[0.1]]),
     )

@@ -11,7 +11,6 @@ class Layer:
         input_neurons,
         neurons,
         activation_function="sigmoid",
-        softmax=False,
         initial_weight_range=(-0.1, 0.1),
         weights=None,
         bias=True,
