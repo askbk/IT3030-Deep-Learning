@@ -53,7 +53,6 @@ class ImageGenerator:
         """
         Colors a pixel if figure_function(x, y) is true.
         """
-
         return list(
             map(
                 lambda x: list(
@@ -74,10 +73,9 @@ class ImageGenerator:
         tolerance = 0.3 / math.log2(figure_size)
 
         def should_be_colored(x, y):
-            center_distance = ImageGenerator._distance((x, y), center)
             return math.isclose(
                 figure_size / 2,
-                center_distance,
+                ImageGenerator._distance((x, y), center),
                 rel_tol=tolerance,
             )
 
@@ -93,8 +91,7 @@ class ImageGenerator:
         tolerance = math.log2(figure_size) * 0.3
 
         def should_be_colored(x, y):
-            center_distance = ImageGenerator._distance((x, y), center)
-            return center_distance <= figure_size and (
+            return ImageGenerator._distance((x, y), center) <= figure_size and (
                 math.isclose(x, center[0], abs_tol=tolerance)
                 or math.isclose(y, center[1], abs_tol=tolerance)
             )
@@ -195,22 +192,23 @@ class ImageGenerator:
         """
         Generates a random figure.
         """
-        center = ImageGenerator._calculate_figure_center(
-            side_length, figure_size, centered
+        return ImageGenerator._add_noise(
+            image=random.choice(
+                [
+                    ImageGenerator._generate_circle,
+                    ImageGenerator._generate_cross,
+                    ImageGenerator._generate_rectangle,
+                    ImageGenerator._generate_triangle,
+                ]
+            )(
+                side_length=side_length,
+                figure_size=figure_size,
+                center=ImageGenerator._calculate_figure_center(
+                    side_length, figure_size, centered
+                ),
+            ),
+            noise=noise,
         )
-
-        figure_generation_functions = [
-            ImageGenerator._generate_circle,
-            ImageGenerator._generate_cross,
-            ImageGenerator._generate_rectangle,
-            ImageGenerator._generate_triangle,
-        ]
-
-        image = random.choice(figure_generation_functions)(
-            side_length, figure_size, center
-        )
-
-        return ImageGenerator._add_noise(image, noise)
 
     @staticmethod
     def _conditional_flatten(image_set, flatten: bool):
@@ -253,7 +251,7 @@ class ImageGenerator:
         image_set_size: int,
     ):
         """
-        docstring
+        Generates a given number of random images.
         """
         return [
             ImageGenerator._generate_random_figure(
