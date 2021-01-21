@@ -32,16 +32,16 @@ class Layer:
             )
 
         if bias:
-            if bias_weights:
+            if bias_weights is not None:
                 self._bias = bias_weights
             else:
                 self._bias = np.random.uniform(
                     low=initial_weight_range[0],
                     high=initial_weight_range[1],
-                    size=neurons,
+                    size=(1, neurons),
                 )
         else:
-            self._bias = np.zeros(neurons)
+            self._bias = np.zeros(shape=(1, neurons))
 
     @staticmethod
     def _sigmoid(X):
@@ -54,7 +54,7 @@ class Layer:
         return X @ self._weights
 
     def _add_bias(self, X: np.array):
-        bias = np.broadcast_to(self._bias, (X.shape[0], 1))
+        bias = np.broadcast_to(self._bias, (X.shape[0], self._bias.shape[1]))
         return X + bias
 
     def forward_pass(self, data):
