@@ -2,8 +2,9 @@ from itertools import chain
 import random
 import math
 import numpy as np
-from itertools import product
+from itertools import product, accumulate, islice
 from typing import Tuple, List
+from functools import reduce
 
 
 class ImageGenerator:
@@ -228,18 +229,15 @@ class ImageGenerator:
         if round(sum(image_set_fractions), 5) != 1:
             raise ValueError("Image set fractions must sum to 1.")
 
-        training, validation, test = image_set_fractions
-
-        if not (0 <= training <= 1 and 0 <= validation <= 1 and 0 <= test <= 1):
+        if not all(map(lambda x: 0 < x <= 1, image_set_fractions)):
             raise ValueError("All image set fractions must be numbers between 0 and 1.")
 
-        training_index = int(training * len(image_set))
-        validation_index = int((training + validation) * len(image_set))
+        split_sizes = map(
+            lambda fraction: int(fraction * len(image_set)), image_set_fractions
+        )
 
-        return (
-            image_set[:training_index],
-            image_set[training_index : validation_index + 1],
-            image_set[validation_index + 1 :],
+        return tuple(
+            [list(islice(image_set, 0, split_size)) for split_size in split_sizes]
         )
 
     @staticmethod
