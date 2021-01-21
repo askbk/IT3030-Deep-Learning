@@ -14,6 +14,7 @@ class Layer:
         softmax=False,
         initial_weight_range=(-0.1, 0.1),
         weights=None,
+        bias=True,
     ):
         self._neurons = neurons
         if weights is not None:
