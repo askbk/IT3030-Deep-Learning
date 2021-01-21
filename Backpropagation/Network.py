@@ -1,3 +1,6 @@
+from functools import reduce
+
+
 class Network:
     """
     A neural network.
@@ -10,4 +13,4 @@ class Network:
         """
         Forward pass through the network.
         """
-        return self._layers[0].forward_pass(X)
+        return reduce(lambda data, layer: layer.forward_pass(data), self._layers, X)
