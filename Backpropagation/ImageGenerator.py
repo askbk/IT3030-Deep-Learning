@@ -236,9 +236,7 @@ class ImageGenerator:
             lambda fraction: int(fraction * len(image_set)), image_set_fractions
         )
 
-        return tuple(
-            [list(islice(image_set, 0, split_size)) for split_size in split_sizes]
-        )
+        return (list(islice(image_set, 0, split_size)) for split_size in split_sizes)
 
     @staticmethod
     def _generate_random_figures(
