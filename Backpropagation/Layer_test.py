@@ -14,12 +14,18 @@ def test_layer_constructor():
     )
 
 
-def test_layer_correct_weight_dimensions():
+def test_layer_correct_weight_bias_dimensions():
     with pytest.raises(ValueError):
         Layer(input_neurons=3, neurons=2, weights=np.array([[1, 2], [1, 2]]))
 
     with pytest.raises(ValueError):
         Layer(input_neurons=3, neurons=2, weights=np.array([[1, 2, 3], [1, 2, 3]]))
+
+    with pytest.raises(ValueError):
+        Layer(input_neurons=1, neurons=2, bias_weights=np.array([1, 2]))
+
+    with pytest.raises(ValueError):
+        Layer(input_neurons=1, neurons=2, bias_weights=np.array([[1, 2], [1, 2]]))
 
 
 def test_forward_pass():

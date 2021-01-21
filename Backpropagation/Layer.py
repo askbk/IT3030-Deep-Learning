@@ -21,7 +21,7 @@ class Layer:
         if weights is not None:
             if weights.shape != (input_neurons, neurons):
                 raise ValueError(
-                    f"weight matrix must have shape ({input_neurons}, {neurons}), was {weights.shape}"
+                    f"Weight matrix must have shape ({input_neurons}, {neurons}), was {weights.shape}"
                 )
             self._weights = weights
         else:
@@ -33,6 +33,10 @@ class Layer:
 
         if bias:
             if bias_weights is not None:
+                if bias_weights.shape != (1, neurons):
+                    raise ValueError(
+                        f"Bias matrix must have shape (1, {neurons}), was {bias_weights.shape}"
+                    )
                 self._bias = bias_weights
             else:
                 self._bias = np.random.uniform(
