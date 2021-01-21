@@ -140,7 +140,6 @@ class ImageGenerator:
         """
         Generates a triangle
         """
-        # leg_tolerance = 5 / math.log2(figure_size)
         leg_tolerance = math.sqrt(figure_size * 1.1) * 0.4
         base_tolerance = math.sqrt(figure_size * 0.5) * 0.3
 
@@ -224,16 +223,20 @@ class ImageGenerator:
         return list(map(lambda image: list(chain.from_iterable(image)), image_set))
 
     @staticmethod
-    def _split_image_set(
-        image_set: List, training_set_fraction: float, validation_set_fraction: float
-    ):
+    def _split_image_set(image_set: List, image_set_fractions: Tuple[float]):
         """
         Splits an image set according to given subset proportions.
         """
-        training_index = int(training_set_fraction * len(image_set))
-        validation_index = int(
-            (training_set_fraction + validation_set_fraction) * len(image_set)
-        )
+        if round(sum(image_set_fractions), 5) != 1:
+            raise ValueError("Image set fractions must sum to 1.")
+
+        training, validation, test = image_set_fractions
+
+        if not (0 <= training <= 1 and 0 <= validation <= 1 and 0 <= test <= 1):
+            raise ValueError("All image set fractions must be numbers between 0 and 1.")
+
+        training_index = int(training * len(image_set))
+        validation_index = int((training + validation) * len(image_set))
 
         return (
             image_set[:training_index],
@@ -274,26 +277,15 @@ class ImageGenerator:
         """
         Generates images.
         """
-        if round(sum(image_set_fractions), 5) != 1:
-            raise ValueError("Image set fractions must sum to 1.")
-
-        training, validation, test = image_set_fractions
-
-        if not (0 <= training <= 1 and 0 <= validation <= 1 and 0 <= test <= 1):
-            raise ValueError("All image set fractions must be numbers between 0 and 1.")
-
-        image_set = ImageGenerator._generate_random_figures(
-            side_length=side_length,
-            figure_size_range=(5, 50),
-            centered=centered,
-            noise=noise,
-            image_set_size=image_set_size,
-        )
-
         training_set, validation_set, test_set = ImageGenerator._split_image_set(
-            image_set=image_set,
-            training_set_fraction=training,
-            validation_set_fraction=validation,
+            image_set=ImageGenerator._generate_random_figures(
+                side_length=side_length,
+                figure_size_range=(5, 50),
+                centered=centered,
+                noise=noise,
+                image_set_size=image_set_size,
+            ),
+            image_set_fractions=image_set_fractions,
         )
 
         return (
