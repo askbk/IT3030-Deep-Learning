@@ -59,11 +59,22 @@ class Layer:
         return 1 / (1 + np.exp(-X))
 
     @staticmethod
+    def _sigmoid_derivative(X):
+        return Layer._sigmoid(X) * (1 - Layer._sigmoid(X))
+
+    @staticmethod
     def _tanh(X):
         """
         Hyperbolic tangent
         """
         return np.tanh(X)
+
+    @staticmethod
+    def _tanh_derivative(X):
+        """
+        Hyperbolic tangent
+        """
+        return 1 - Layer._tanh(X) ** 2
 
     @staticmethod
     def _linear(X):
@@ -73,11 +84,19 @@ class Layer:
         return X
 
     @staticmethod
+    def _linear_derivative(X):
+        return np.ones_like(X)
+
+    @staticmethod
     def _relu(X):
         """
         Rectified linear unit function
         """
         return np.maximum(X, 0)
+
+    @staticmethod
+    def _relu_derivative(X):
+        return np.where(X <= 0, 0, 1)
 
     def _multiply_weights(self, X: np.array):
         return X @ self._weights
