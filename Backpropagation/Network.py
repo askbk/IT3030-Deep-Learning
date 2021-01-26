@@ -37,6 +37,7 @@ class Network:
         X, Y = batch
         output = self.forward_pass(X)
         loss = self._apply_loss_function(Y, output)
+        output_jacobian = self._layers[-1].backward_pass(loss)
         return self
 
     def train(self, X, Y, minibatches=1):
