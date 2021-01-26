@@ -13,7 +13,7 @@ class Layer:
         activation_function="sigmoid",
         initial_weight_range=(-0.1, 0.1),
         weights=None,
-        bias=True,
+        use_bias=True,
         bias_weights=None,
     ):
         self._neurons = neurons
@@ -30,27 +30,36 @@ class Layer:
                 size=(input_neurons, neurons),
             )
 
-        if bias:
-            if bias_weights is not None:
-                if bias_weights.shape != (neurons,):
-                    raise ValueError(
-                        f"Bias matrix must have shape ({neurons}, ), was {bias_weights.shape}"
-                    )
-                self._bias = bias_weights
-            else:
-                self._bias = np.random.uniform(
-                    low=initial_weight_range[0],
-                    high=initial_weight_range[1],
-                    size=neurons,
-                )
-        else:
-            self._bias = np.zeros(shape=neurons)
+        self._bias = Layer._initialize_bias(
+            use_bias, bias_weights, neurons, input_neurons, initial_weight_range
+        )
 
         if activation_function not in ("sigmoid", "tanh", "relu", "linear"):
             raise ValueError("Invalid activation function.")
 
         self._activation_function = activation_function
         self._input_neurons = input_neurons
+
+    @staticmethod
+    def _initialize_bias(
+        use_bias, bias_weights, neurons, input_neurons, initial_weight_range
+    ):
+        if not use_bias:
+            return np.zeros(shape=neurons)
+
+        if bias_weights is not None:
+            if bias_weights.shape != (neurons,):
+                raise ValueError(
+                    f"Bias matrix must have shape ({neurons}, ), was {bias_weights.shape}"
+                )
+
+            return bias_weights
+
+        return np.random.uniform(
+            low=initial_weight_range[0],
+            high=initial_weight_range[1],
+            size=neurons,
+        )
 
     @staticmethod
     def _sigmoid(X):

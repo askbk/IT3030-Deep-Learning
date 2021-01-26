@@ -41,7 +41,7 @@ def test_forward_pass_correct_output_base_case():
         neurons=1,
         weights=np.array([[1]]),
         activation_function="sigmoid",
-        bias=False,
+        use_bias=False,
     )
     cases = [np.array([-1]), np.array([0]), np.array([1])]
     actual = [layer.forward_pass(case) for case in cases]
@@ -56,7 +56,7 @@ def test_forward_pass_correct_output_multiple_input():
         neurons=1,
         weights=np.array([[0.1], [0.2]]),
         activation_function="sigmoid",
-        bias=False,
+        use_bias=False,
     )
     cases = [np.array([-1, 1]), np.array([0, -1]), np.array([1, 0])]
     actual = [layer.forward_pass(case) for case in cases]
@@ -71,7 +71,7 @@ def test_forward_pass_correct_output_with_bias():
         neurons=1,
         weights=np.array([[0.1], [0.2]]),
         activation_function="sigmoid",
-        bias=True,
+        use_bias=True,
         bias_weights=np.array([0.1]),
     )
     cases = np.array([[-1, 1], [0, -1], [1, 0]])
@@ -87,7 +87,7 @@ def test_hyperbolic_tangent_activation():
         neurons=1,
         weights=np.array([[0.1], [0.2]]),
         activation_function="tanh",
-        bias=True,
+        use_bias=True,
         bias_weights=np.array([0.1]),
     )
     data = np.array([[-1, 1], [0, -1], [1, 0]])
@@ -103,7 +103,7 @@ def test_relu_activation():
         neurons=1,
         weights=np.array([[0.1], [0.2]]),
         activation_function="relu",
-        bias=True,
+        use_bias=True,
         bias_weights=np.array([0.1]),
     )
     data = np.array([[-1, 1], [0, -1], [1, 0]])
@@ -118,7 +118,7 @@ def test_linear_activation():
         neurons=1,
         weights=np.array([[0.1], [0.2]]),
         activation_function="linear",
-        bias=True,
+        use_bias=True,
         bias_weights=np.array([0.1]),
     )
     data = np.array([[-1, 1], [0, -1], [1, 0]])
