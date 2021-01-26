@@ -50,6 +50,7 @@ class Layer:
             raise ValueError("Invalid activation function.")
 
         self._activation_function = activation_function
+        self._input_neurons = input_neurons
 
     @staticmethod
     def _sigmoid(X):
@@ -122,10 +123,49 @@ class Layer:
 
         raise NotImplementedError()
 
+    def _apply_activation_function_derivative(self, data):
+        """
+        Applies the current activation function to the data.
+        """
+        if self._activation_function == "sigmoid":
+            return Layer._sigmoid_derivative(data)
+
+        if self._activation_function == "tanh":
+            return Layer._tanh_derivative(data)
+
+        if self._activation_function == "relu":
+            return Layer._relu_derivative(data)
+
+        if self._activation_function == "linear":
+            return Layer._linear_derivative(data)
+
+        raise NotImplementedError()
+
     def forward_pass(self, data):
         """
         Data is a row-vector representing a single test case.
         """
         return self._apply_activation_function(
             self._add_bias(self._multiply_weights(data))
+        )
+
+    def backward_pass(self, J_L_Z, Z, Y, learning_rate):
+        """
+        Returns a tuple of the updated layer and the Jacobian to pass upstream.
+        """
+        Diag_J_Z_Sum = self._apply_activation_function_derivative(Z)
+        J_Z_Sum = np.diag(Diag_J_Z_Sum)
+        J_Z_Y = np.dot(J_Z_Sum, self._weights.T)
+        J_hat_Z_W = np.outer(Y, Diag_J_Z_Sum)
+        J_L_W = J_L_Z * J_hat_Z_W
+        new_weights = self._weights - learning_rate * J_L_W
+        return (
+            Layer(
+                input_neurons=self._input_neurons,
+                neurons=self._neurons,
+                activation_function=self._activation_function,
+                weights=new_weights,
+                bias_weights=self._bias,
+            ),
+            J_Z_Y,
         )

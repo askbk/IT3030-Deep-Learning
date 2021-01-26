@@ -128,13 +128,21 @@ def test_linear_activation():
     assert np.all(np.isclose(actual, expected))
 
 
-# def test_backward_pass_sigmoid():
-#     layer = Layer(
-#         input_neurons=2,
-#         neurons=1,
-#         weights=np.array([[0.1], [0.2]]),
-#         activation_function="sigmoid",
-#         bias=True,
-#         bias_weights=np.array([[0.1]]),
-#     )
-#     downstream_jacobian = np.array([[[]]])
+def test_backward_pass_updates_weights():
+    Y = np.array([-0.1, 0.2])
+    W = np.array([[0.3, -0.1, -0.2], [0.2, 0.5, 0.1]])
+    YW = Y @ W
+    f = lambda X: 1 / (1 + np.exp(-X))
+    Z = f(YW)
+    layer = Layer(
+        input_neurons=2,
+        neurons=3,
+        weights=W,
+        activation_function="sigmoid",
+        bias=False,
+    )
+
+    updated_layer, _ = layer.backward_pass(Z, Z, Y, 0.1)
+
+    new_Z = updated_layer.forward_pass(Y)
+    assert not np.all(np.isclose(new_Z, Z))
