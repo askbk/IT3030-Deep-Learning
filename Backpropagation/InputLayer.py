@@ -1,3 +1,6 @@
+import numpy as np
+
+
 class InputLayer:
     """
     Represents an input layer with no weights or biases.
@@ -7,4 +10,4 @@ class InputLayer:
         """
         Passes the data through the layer without modifying it.
         """
-        return data
+        return np.concatenate(([1], data))
