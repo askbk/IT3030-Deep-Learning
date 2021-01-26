@@ -10,4 +10,4 @@ class InputLayer:
         """
         Passes the data through the layer without modifying it.
         """
-        return np.concatenate(([1], data))
+        return data

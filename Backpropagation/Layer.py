@@ -14,57 +14,34 @@ class Layer:
         initial_weight_range=(-0.1, 0.1),
         weights=None,
         use_bias=True,
-        bias_weights=None,
     ):
-        self._neurons = neurons
         self._weights = Layer._initialize_weights(
-            weights, input_neurons, neurons, initial_weight_range
-        )
-
-        self._bias = Layer._initialize_bias(
-            use_bias, bias_weights, neurons, input_neurons, initial_weight_range
+            weights, input_neurons, neurons, initial_weight_range, use_bias
         )
 
         if activation_function not in ("sigmoid", "tanh", "relu", "linear"):
             raise ValueError("Invalid activation function.")
-
-        self._activation_function = activation_function
+        self._use_bias = use_bias
+        self._neurons = neurons
         self._input_neurons = input_neurons
+        self._activation_function = activation_function
 
     @staticmethod
-    def _initialize_bias(
-        use_bias, bias_weights, neurons, input_neurons, initial_weight_range
+    def _initialize_weights(
+        weights, input_neurons, neurons, initial_weight_range, use_bias
     ):
-        if not use_bias:
-            return np.zeros(shape=neurons)
-
-        if bias_weights is not None:
-            if bias_weights.shape != (neurons,):
-                raise ValueError(
-                    f"Bias matrix must have shape ({neurons}, ), was {bias_weights.shape}"
-                )
-
-            return bias_weights
-
-        return np.random.uniform(
-            low=initial_weight_range[0],
-            high=initial_weight_range[1],
-            size=neurons,
-        )
-
-    @staticmethod
-    def _initialize_weights(weights, input_neurons, neurons, initial_weight_range):
+        expected_shape = (input_neurons + 1 if use_bias else input_neurons, neurons)
         if weights is not None:
-            if weights.shape != (input_neurons, neurons):
+            if weights.shape != expected_shape:
                 raise ValueError(
-                    f"Weight matrix must have shape ({input_neurons}, {neurons}), was {weights.shape}"
+                    f"Weight matrix must have shape ({expected_shape}), was {weights.shape}"
                 )
             return weights
         else:
             return np.random.uniform(
                 low=initial_weight_range[0],
                 high=initial_weight_range[1],
-                size=(input_neurons, neurons),
+                size=expected_shape,
             )
 
     @staticmethod
@@ -115,10 +92,9 @@ class Layer:
         return np.where(X <= 0, 0, 1)
 
     def _multiply_weights(self, X: np.array):
+        print(X)
+        print(self._weights)
         return X @ self._weights
-
-    def _add_bias(self, X: np.array):
-        return X + self._bias
 
     def _apply_activation_function(self, data):
         """
@@ -156,12 +132,17 @@ class Layer:
 
         raise NotImplementedError()
 
+    def _add_bias_neuron_conditionally(self, data):
+        if self._use_bias:
+            return np.concatenate(([1], data))
+        return data
+
     def forward_pass(self, data):
         """
         Data is a row-vector representing a single test case.
         """
         return self._apply_activation_function(
-            self._add_bias(self._multiply_weights(data))
+            self._multiply_weights(self._add_bias_neuron_conditionally(data))
         )
 
     def backward_pass(self, J_L_Z, Z, Y, learning_rate):
@@ -171,7 +152,7 @@ class Layer:
         Diag_J_Z_Sum = self._apply_activation_function_derivative(Z)
         J_Z_Sum = np.diag(Diag_J_Z_Sum)
         J_Z_Y = np.dot(J_Z_Sum, self._weights.T)
-        J_hat_Z_W = np.outer(Y, Diag_J_Z_Sum)
+        J_hat_Z_W = np.outer(self._add_bias_neuron_conditionally(Y), Diag_J_Z_Sum)
         J_L_W = J_L_Z * J_hat_Z_W
         new_weights = self._weights - learning_rate * J_L_W
         return (
@@ -180,7 +161,7 @@ class Layer:
                 neurons=self._neurons,
                 activation_function=self._activation_function,
                 weights=new_weights,
-                bias_weights=self._bias,
+                use_bias=self._use_bias,
             ),
             J_Z_Y,
         )

@@ -18,16 +18,16 @@ def test_network_forward_pass_base_case():
                 input_neurons=1,
                 neurons=1,
                 activation_function="sigmoid",
-                weights=np.array([[1]]),
+                weights=np.array([[1], [1]]),
                 use_bias=True,
-                bias_weights=np.array([1]),
             )
         ],
         loss_function="mse",
         regularization=None,
     )
 
-    actual = network.forward_pass(np.array([[-1], [0], [1]]))
+    cases = np.array([[-1], [0], [1]])
+    actual = [network.forward_pass(case) for case in cases]
     expected = np.array([[0.5], [0.73105858], [0.8807971]])
 
     assert np.all(np.isclose(actual, expected))
@@ -40,26 +40,24 @@ def test_network_forward_pass_multiple_layers():
                 input_neurons=1,
                 neurons=3,
                 activation_function="sigmoid",
-                weights=np.array([[0.1, 0.2, -0.1]]),
+                weights=np.array([[0.1, 0.1, 0.1], [0.1, 0.2, -0.1]]),
                 use_bias=True,
-                bias_weights=np.array([0.1, 0.1, 0.1]),
             ),
             Layer(
                 input_neurons=3,
                 neurons=2,
                 activation_function="sigmoid",
-                weights=np.array([[0.1, -0.1], [-0.1, -0.1], [0.2, 0.1]]),
+                weights=np.array([[0.2, 0.3], [0.1, -0.1], [-0.1, -0.1], [0.2, 0.1]]),
                 use_bias=True,
-                bias_weights=np.array([0.2, 0.3]),
             ),
         ],
         loss_function="mse",
         regularization=None,
     )
 
-    data = np.array([[1], [0], [-1]])
+    cases = np.array([[1], [0], [-1]])
 
-    actual = network.forward_pass(data)
+    actual = [network.forward_pass(case) for case in cases]
     expected = np.array(
         [[0.57384083, 0.55911531], [0.57566333, 0.56156158], [0.57748676, 0.56401704]]
     )
@@ -75,17 +73,16 @@ def test_network_with_input_layer():
                 input_neurons=2,
                 neurons=1,
                 activation_function="sigmoid",
-                weights=np.array([[0.1], [-0.3]]),
+                weights=np.array([[0.2], [0.1], [-0.3]]),
                 use_bias=True,
-                bias_weights=np.array([0.2]),
             ),
         ],
         loss_function="mse",
         regularization=None,
     )
 
-    data = np.array([[1, 1], [0, 0], [-1, 1]])
-    actual = network.forward_pass(data)
+    cases = np.array([[1, 1], [0, 0], [-1, 1]])
+    actual = [network.forward_pass(case) for case in cases]
     expected = np.array([[0.5], [0.549834], [0.450166]])
 
     assert np.all(np.isclose(actual, expected))
