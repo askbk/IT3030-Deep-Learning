@@ -21,15 +21,15 @@ def test_layer_correct_weight_bias_dimensions():
         Layer(input_neurons=3, neurons=2, weights=np.array([[1, 2, 3], [1, 2, 3]]))
 
     with pytest.raises(ValueError):
-        Layer(input_neurons=1, neurons=2, bias_weights=np.array([1, 2]))
+        Layer(input_neurons=1, neurons=2, bias_weights=np.array([[1, 2]]))
 
     with pytest.raises(ValueError):
         Layer(input_neurons=1, neurons=2, bias_weights=np.array([[1, 2], [1, 2]]))
 
 
 def test_forward_pass():
-    layer = Layer(neurons=1, input_neurons=1)
-    data = np.array([[0], [1]])
+    layer = Layer(neurons=1, input_neurons=2)
+    data = np.array([0, 1])
     output = layer.forward_pass(data)
 
     assert not np.any(np.isnan(output))
@@ -43,9 +43,10 @@ def test_forward_pass_correct_output_base_case():
         activation_function="sigmoid",
         bias=False,
     )
-    actual = layer.forward_pass(np.array([[-1], [0], [1]]))
-    expected = np.array([[0.26894142], [0.5], [0.73105858]])
-
+    cases = [np.array([-1]), np.array([0]), np.array([1])]
+    actual = [layer.forward_pass(case) for case in cases]
+    expected = [[0.26894142], [0.5], [0.73105858]]
+    print(actual, expected)
     assert np.all(np.isclose(actual, expected))
 
 
@@ -57,8 +58,8 @@ def test_forward_pass_correct_output_multiple_input():
         activation_function="sigmoid",
         bias=False,
     )
-    data = np.array([[-1, 1], [0, -1], [1, 0]])
-    actual = layer.forward_pass(data)
+    cases = [np.array([-1, 1]), np.array([0, -1]), np.array([1, 0])]
+    actual = [layer.forward_pass(case) for case in cases]
     expected = [[0.52498], [0.45017], [0.52498]]
 
     assert np.all(np.isclose(actual, expected))
@@ -71,11 +72,12 @@ def test_forward_pass_correct_output_with_bias():
         weights=np.array([[0.1], [0.2]]),
         activation_function="sigmoid",
         bias=True,
-        bias_weights=np.array([[0.1]]),
+        bias_weights=np.array([0.1]),
     )
-    data = np.array([[-1, 1], [0, -1], [1, 0]])
-    actual = layer.forward_pass(data)
+    cases = np.array([[-1, 1], [0, -1], [1, 0]])
+    actual = [layer.forward_pass(case) for case in cases]
     expected = np.array([[0.549834], [0.475021], [0.549834]])
+    print(actual, expected)
 
     assert np.all(np.isclose(actual, expected))
 
@@ -87,7 +89,7 @@ def test_hyperbolic_tangent_activation():
         weights=np.array([[0.1], [0.2]]),
         activation_function="tanh",
         bias=True,
-        bias_weights=np.array([[0.1]]),
+        bias_weights=np.array([0.1]),
     )
     data = np.array([[-1, 1], [0, -1], [1, 0]])
     actual = layer.forward_pass(data)
@@ -103,7 +105,7 @@ def test_relu_activation():
         weights=np.array([[0.1], [0.2]]),
         activation_function="relu",
         bias=True,
-        bias_weights=np.array([[0.1]]),
+        bias_weights=np.array([0.1]),
     )
     data = np.array([[-1, 1], [0, -1], [1, 0]])
     actual = layer.forward_pass(data)
@@ -118,9 +120,21 @@ def test_linear_activation():
         weights=np.array([[0.1], [0.2]]),
         activation_function="linear",
         bias=True,
-        bias_weights=np.array([[0.1]]),
+        bias_weights=np.array([0.1]),
     )
     data = np.array([[-1, 1], [0, -1], [1, 0]])
     actual = layer.forward_pass(data)
     expected = np.array([[0.2], [-0.1], [0.2]])
     assert np.all(np.isclose(actual, expected))
+
+
+# def test_backward_pass_sigmoid():
+#     layer = Layer(
+#         input_neurons=2,
+#         neurons=1,
+#         weights=np.array([[0.1], [0.2]]),
+#         activation_function="sigmoid",
+#         bias=True,
+#         bias_weights=np.array([[0.1]]),
+#     )
+#     downstream_jacobian = np.array([[[]]])

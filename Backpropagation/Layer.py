@@ -32,19 +32,19 @@ class Layer:
 
         if bias:
             if bias_weights is not None:
-                if bias_weights.shape != (1, neurons):
+                if bias_weights.shape != (neurons,):
                     raise ValueError(
-                        f"Bias matrix must have shape (1, {neurons}), was {bias_weights.shape}"
+                        f"Bias matrix must have shape ({neurons}, ), was {bias_weights.shape}"
                     )
                 self._bias = bias_weights
             else:
                 self._bias = np.random.uniform(
                     low=initial_weight_range[0],
                     high=initial_weight_range[1],
-                    size=(1, neurons),
+                    size=neurons,
                 )
         else:
-            self._bias = np.zeros(shape=(1, neurons))
+            self._bias = np.zeros(shape=neurons)
 
         if activation_function not in ("sigmoid", "tanh", "relu", "linear"):
             raise ValueError("Invalid activation function.")
@@ -102,8 +102,7 @@ class Layer:
         return X @ self._weights
 
     def _add_bias(self, X: np.array):
-        bias = np.broadcast_to(self._bias, (X.shape[0], self._bias.shape[1]))
-        return X + bias
+        return X + self._bias
 
     def _apply_activation_function(self, data):
         """
@@ -125,8 +124,7 @@ class Layer:
 
     def forward_pass(self, data):
         """
-        Data is a matrix with a minibatch of data.
-        Each test case should be row-oriented.
+        Data is a row-vector representing a single test case.
         """
         return self._apply_activation_function(
             self._add_bias(self._multiply_weights(data))

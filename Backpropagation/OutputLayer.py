@@ -17,12 +17,20 @@ class OutputLayer:
         """
         return np.exp(X) / np.sum(np.exp(X), axis=1, keepdims=True)
 
-    def backward_pass(self, loss):
+    def backward_pass(self, output):
         """
         Computes Jacobian.
         """
         if self._use_softmax:
-            raise NotImplementedError("Softmax Jacobian not implemented.")
+            softmax_jacobian = np.array(
+                [
+                    np.diag(case_output) - np.outer(case_output, case_output)
+                    for case_output in output
+                ]
+            )
+            return tensor
+
+        return output
 
     def forward_pass(self, data):
         if self._use_softmax:
