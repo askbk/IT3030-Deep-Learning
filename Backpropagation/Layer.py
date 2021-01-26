@@ -17,18 +17,9 @@ class Layer:
         bias_weights=None,
     ):
         self._neurons = neurons
-        if weights is not None:
-            if weights.shape != (input_neurons, neurons):
-                raise ValueError(
-                    f"Weight matrix must have shape ({input_neurons}, {neurons}), was {weights.shape}"
-                )
-            self._weights = weights
-        else:
-            self._weights = np.random.uniform(
-                low=initial_weight_range[0],
-                high=initial_weight_range[1],
-                size=(input_neurons, neurons),
-            )
+        self._weights = Layer._initialize_weights(
+            weights, input_neurons, neurons, initial_weight_range
+        )
 
         self._bias = Layer._initialize_bias(
             use_bias, bias_weights, neurons, input_neurons, initial_weight_range
@@ -60,6 +51,21 @@ class Layer:
             high=initial_weight_range[1],
             size=neurons,
         )
+
+    @staticmethod
+    def _initialize_weights(weights, input_neurons, neurons, initial_weight_range):
+        if weights is not None:
+            if weights.shape != (input_neurons, neurons):
+                raise ValueError(
+                    f"Weight matrix must have shape ({input_neurons}, {neurons}), was {weights.shape}"
+                )
+            return weights
+        else:
+            return np.random.uniform(
+                low=initial_weight_range[0],
+                high=initial_weight_range[1],
+                size=(input_neurons, neurons),
+            )
 
     @staticmethod
     def _sigmoid(X):
