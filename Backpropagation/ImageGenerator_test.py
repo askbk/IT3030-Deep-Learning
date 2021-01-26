@@ -39,7 +39,7 @@ def test_flatten():
     training, validation, test = ImageGenerator.generate(
         flatten=True, side_length=side_length
     )
-    print(test)
+
     assert all(
         map(
             lambda image: len(image) == side_length * side_length,

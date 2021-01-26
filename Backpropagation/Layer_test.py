@@ -46,7 +46,7 @@ def test_forward_pass_correct_output_base_case():
     cases = [np.array([-1]), np.array([0]), np.array([1])]
     actual = [layer.forward_pass(case) for case in cases]
     expected = [[0.26894142], [0.5], [0.73105858]]
-    print(actual, expected)
+
     assert np.all(np.isclose(actual, expected))
 
 
@@ -77,7 +77,6 @@ def test_forward_pass_correct_output_with_bias():
     cases = np.array([[-1, 1], [0, -1], [1, 0]])
     actual = [layer.forward_pass(case) for case in cases]
     expected = np.array([[0.549834], [0.475021], [0.549834]])
-    print(actual, expected)
 
     assert np.all(np.isclose(actual, expected))
 
@@ -134,15 +133,17 @@ def test_backward_pass_updates_weights():
     YW = Y @ W
     f = lambda X: 1 / (1 + np.exp(-X))
     Z = f(YW)
+    bias = np.array([0.1, 0.2, 0.3])
     layer = Layer(
         input_neurons=2,
         neurons=3,
         weights=W,
         activation_function="sigmoid",
-        bias=False,
+        bias_weights=bias,
     )
 
     updated_layer, _ = layer.backward_pass(Z, Z, Y, 0.1)
 
     new_Z = updated_layer.forward_pass(Y)
     assert not np.all(np.isclose(new_Z, Z))
+    assert not np.all(np.isclose(updated_layer._bias, bias))
