@@ -95,14 +95,14 @@ def test_training_base_case():
             Layer(
                 input_neurons=2,
                 neurons=2,
-                activation_function="linear",
+                activation_function="sigmoid",
                 use_bias=True,
                 initial_weight_range=(-1, 1),
             ),
             Layer(
                 input_neurons=2,
                 neurons=1,
-                activation_function="linear",
+                activation_function="sigmoid",
                 use_bias=True,
                 initial_weight_range=(-1, 1),
             ),
@@ -110,12 +110,21 @@ def test_training_base_case():
         ],
         regularization=False,
         loss_function="mse",
+        learning_rate=0.1,
     )
 
     minibatch_x = [[0, 0], [0, 1], [1, 0], [1, 1]]
     minibatch_y = [[0], [1], [1], [0]]
 
-    trained_network = network.train(minibatch_x * 5, minibatch_y * 5, minibatches=5)
+    before_tranining = np.array([network.forward_pass(x) for x in minibatch_x])
+    trained_network = network.train(
+        np.array(minibatch_x * 1), np.array(minibatch_y * 1), minibatches=1
+    )
 
-    output_after_training = [trained_network.forward_pass(x) for x in minibatch_x]
-    print(output_after_training, minibatch_y)
+    output_after_training = np.array(
+        [trained_network.forward_pass(x) for x in minibatch_x]
+    )
+    print(output_after_training)
+    print(
+        f"Error before training: {Network._mean_squared_error(before_tranining, minibatch_y)}\nError after training: {Network._mean_squared_error(output_after_training, minibatch_y)}"
+    )

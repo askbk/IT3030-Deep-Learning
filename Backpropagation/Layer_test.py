@@ -131,7 +131,4 @@ def test_backward_pass_updates_weights():
         use_bias=True,
     )
 
-    updated_layer, _ = layer.backward_pass(Z, Z, Y, 0.1)
-    layer.forward_pass(Y)
-    new_Z = updated_layer.forward_pass(Y)
-    assert not np.all(np.isclose(new_Z, Z))
+    weight_jacobian, prev_layer_jacobian = layer.backward_pass(Z, Z, Y)

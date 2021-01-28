@@ -1,4 +1,5 @@
 import numpy as np
+from Math import Activation
 
 
 class Layer:
@@ -44,56 +45,7 @@ class Layer:
                 size=expected_shape,
             )
 
-    @staticmethod
-    def _sigmoid(X):
-        """
-        Sigmoid function
-        """
-        return 1 / (1 + np.exp(-X))
-
-    @staticmethod
-    def _sigmoid_derivative(X):
-        return Layer._sigmoid(X) * (1 - Layer._sigmoid(X))
-
-    @staticmethod
-    def _tanh(X):
-        """
-        Hyperbolic tangent
-        """
-        return np.tanh(X)
-
-    @staticmethod
-    def _tanh_derivative(X):
-        """
-        Hyperbolic tangent
-        """
-        return 1 - Layer._tanh(X) ** 2
-
-    @staticmethod
-    def _linear(X):
-        """
-        Linear function
-        """
-        return X
-
-    @staticmethod
-    def _linear_derivative(X):
-        return np.ones_like(X)
-
-    @staticmethod
-    def _relu(X):
-        """
-        Rectified linear unit function
-        """
-        return np.maximum(X, 0)
-
-    @staticmethod
-    def _relu_derivative(X):
-        return np.where(X <= 0, 0, 1)
-
     def _multiply_weights(self, X: np.array):
-        print(X)
-        print(self._weights)
         return X @ self._weights
 
     def _apply_activation_function(self, data):
@@ -101,16 +53,16 @@ class Layer:
         Applies the current activation function to the data.
         """
         if self._activation_function == "sigmoid":
-            return Layer._sigmoid(data)
+            return Activation._sigmoid(data)
 
         if self._activation_function == "tanh":
-            return Layer._tanh(data)
+            return Activation._tanh(data)
 
         if self._activation_function == "relu":
-            return Layer._relu(data)
+            return Activation._relu(data)
 
         if self._activation_function == "linear":
-            return Layer._linear(data)
+            return Activation._linear(data)
 
         raise NotImplementedError()
 
@@ -119,16 +71,16 @@ class Layer:
         Applies the current activation function to the data.
         """
         if self._activation_function == "sigmoid":
-            return Layer._sigmoid_derivative(data)
+            return Activation._sigmoid_derivative(data)
 
         if self._activation_function == "tanh":
-            return Layer._tanh_derivative(data)
+            return Activation._tanh_derivative(data)
 
         if self._activation_function == "relu":
-            return Layer._relu_derivative(data)
+            return Activation._relu_derivative(data)
 
         if self._activation_function == "linear":
-            return Layer._linear_derivative(data)
+            return Activation._linear_derivative(data)
 
         raise NotImplementedError()
 
@@ -145,23 +97,29 @@ class Layer:
             self._multiply_weights(self._add_bias_neuron_conditionally(data))
         )
 
-    def backward_pass(self, J_L_Z, Z, Y, learning_rate):
+    def backward_pass(self, J_L_Z, Z, Y):
         """
-        Returns a tuple of the updated layer and the Jacobian to pass upstream.
+        Returns a tuple of the weight Jacobian and the Jacobian to pass upstream.
         """
         Diag_J_Z_Sum = self._apply_activation_function_derivative(Z)
         J_Z_Sum = np.diag(Diag_J_Z_Sum)
         J_Z_Y = np.dot(J_Z_Sum, self._weights.T)
         J_hat_Z_W = np.outer(self._add_bias_neuron_conditionally(Y), Diag_J_Z_Sum)
+        # print(J_L_Z.shape, J_hat_Z_W.shape)
         J_L_W = J_L_Z * J_hat_Z_W
-        new_weights = self._weights - learning_rate * J_L_W
-        return (
-            Layer(
-                input_neurons=self._input_neurons,
-                neurons=self._neurons,
-                activation_function=self._activation_function,
-                weights=new_weights,
-                use_bias=self._use_bias,
-            ),
-            J_Z_Y,
+        J_L_Y = np.dot(J_Z_Y, J_L_Z)
+        # J_L_W = np.dot(J_Z_W)
+
+        return J_L_W, J_L_Y
+
+    def update_weights(self, jacobians, learning_rate):
+        mean_loss_jacobian = np.mean(jacobians, axis=0)
+        new_weights = self._weights - learning_rate * mean_loss_jacobian
+
+        return Layer(
+            input_neurons=self._input_neurons,
+            neurons=self._neurons,
+            activation_function=self._activation_function,
+            weights=new_weights,
+            use_bias=self._use_bias,
         )
