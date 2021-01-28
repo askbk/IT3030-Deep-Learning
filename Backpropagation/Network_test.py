@@ -97,12 +97,14 @@ def test_training_base_case():
                 neurons=2,
                 activation_function="linear",
                 use_bias=True,
+                initial_weight_range=(-1, 1),
             ),
             Layer(
                 input_neurons=2,
                 neurons=1,
                 activation_function="linear",
                 use_bias=True,
+                initial_weight_range=(-1, 1),
             ),
             OutputLayer(input_neurons=1),
         ],
@@ -110,11 +112,10 @@ def test_training_base_case():
         loss_function="mse",
     )
 
-    # X = np.array([[0, 0], [0, 1], [1, 0], [1, 1]])
-    # Y = np.array([[0], [1], [1], [0]])
+    minibatch_x = [[0, 0], [0, 1], [1, 0], [1, 1]]
+    minibatch_y = [[0], [1], [1], [0]]
 
-    # trained_network = network.train(X, Y, minibatches=2)
+    trained_network = network.train(minibatch_x * 5, minibatch_y * 5, minibatches=5)
 
-    # output_after_training = trained_network.forward_pass(X)
-    # print(output_after_training, Y)
-    # assert np.all(np.isclose(output_after_training, Y))
+    output_after_training = [trained_network.forward_pass(x) for x in minibatch_x]
+    print(output_after_training, minibatch_y)
