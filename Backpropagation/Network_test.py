@@ -2,6 +2,7 @@ from Network import Network
 from Layer import Layer
 from InputLayer import InputLayer
 from OutputLayer import OutputLayer
+from Math import Loss
 import numpy as np
 
 
@@ -118,7 +119,7 @@ def test_training_base_case():
 
     before_tranining = np.array([network.forward_pass(x) for x in minibatch_x])
     trained_network = network.train(
-        np.array(minibatch_x * 1), np.array(minibatch_y * 1), minibatches=1
+        np.array(minibatch_x * 1000), np.array(minibatch_y * 1000), minibatches=1000
     )
 
     output_after_training = np.array(
@@ -126,5 +127,5 @@ def test_training_base_case():
     )
     print(output_after_training)
     print(
-        f"Error before training: {Network._mean_squared_error(before_tranining, minibatch_y)}\nError after training: {Network._mean_squared_error(output_after_training, minibatch_y)}"
+        f"Error before training: {Loss._mean_squared_error(before_tranining, minibatch_y)}\nError after training: {Loss._mean_squared_error(output_after_training, minibatch_y)}"
     )

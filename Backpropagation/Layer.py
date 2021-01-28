@@ -89,6 +89,11 @@ class Layer:
             return np.concatenate(([1], data))
         return data
 
+    def _get_weights_excluding_bias(self):
+        if self._use_bias:
+            return self._weights[1:, :]
+        return self._weights
+
     def forward_pass(self, data):
         """
         Data is a row-vector representing a single test case.
@@ -103,18 +108,18 @@ class Layer:
         """
         Diag_J_Z_Sum = self._apply_activation_function_derivative(Z)
         J_Z_Sum = np.diag(Diag_J_Z_Sum)
-        J_Z_Y = np.dot(J_Z_Sum, self._weights.T)
+        # Don't include bias node in Jacobian passed upstream
+        J_Z_Y = np.dot(J_Z_Sum, self._get_weights_excluding_bias().T)
+        # J_hat_Z_W = np.outer(Diag_J_Z_Sum, self._add_bias_neuron_conditionally(Y))
         J_hat_Z_W = np.outer(self._add_bias_neuron_conditionally(Y), Diag_J_Z_Sum)
-        # print(J_L_Z.shape, J_hat_Z_W.shape)
         J_L_W = J_L_Z * J_hat_Z_W
-        J_L_Y = np.dot(J_Z_Y, J_L_Z)
-        # J_L_W = np.dot(J_Z_W)
+        J_L_Y = np.dot(J_L_Z, J_Z_Y)
 
         return J_L_W, J_L_Y
 
     def update_weights(self, jacobians, learning_rate):
         mean_loss_jacobian = np.mean(jacobians, axis=0)
-        new_weights = self._weights - learning_rate * mean_loss_jacobian
+        new_weights = self._weights + learning_rate * mean_loss_jacobian
 
         return Layer(
             input_neurons=self._input_neurons,

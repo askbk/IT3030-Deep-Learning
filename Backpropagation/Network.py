@@ -82,15 +82,12 @@ class Network:
         Returns the weight jacobian for each layer.
         """
         x, y = case
-        # compute outputs at each layer
         layer_outputs = self._cached_forward_pass(x)
-        # compute loss jacobian
-        loss_jacobian = self._apply_loss_function_derivative(layer_outputs[-1], y)
-        # print(case, layer_outputs[-1], loss_jacobian)
-        # backpropagate
+        loss_jacobian = np.array(
+            [self._apply_loss_function_derivative(layer_outputs[-1], y)]
+        )
         weight_jacobians = list()
         downstream_jacobian = loss_jacobian
-        # print(layer_outputs, len(layer_outputs))
         for index in reversed(range(len(self._layers))):
             # print(f"layer {index} of {len(self._layers) - 1}")
             weight_jacobian, pass_down = self._layers[index].backward_pass(
