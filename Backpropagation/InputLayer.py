@@ -11,3 +11,12 @@ class InputLayer:
         Passes the data through the layer without modifying it.
         """
         return data
+
+    def backward_pass(self, J_L_Z, Z, Y):
+        """
+        Returns a tuple of the weight Jacobian and the Jacobian to pass upstream.
+        """
+        return None, None
+
+    def update_weights(self, jacobians, learning_rate):
+        return self
