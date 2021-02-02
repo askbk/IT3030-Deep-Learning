@@ -60,12 +60,22 @@ class Activation:
 
 class Loss:
     @staticmethod
-    def _mean_squared_error(Y: np.array, Y_hat: np.array):
+    def mean_squared_error(Y: np.array, Y_hat: np.array):
         """
         Calculates mean squared error.
         """
         return 0.5 * ((Y - Y_hat) ** 2).mean()
 
     @staticmethod
-    def _mean_squared_error_derivative(Y: np.array, Y_hat: np.array):
+    def mean_squared_error_derivative(Y: np.array, Y_hat: np.array):
         return Y_hat - Y
+
+    @staticmethod
+    def cross_entropy(Y: np.array, Y_hat: np.array):
+        return -np.dot(Y, np.log(Y_hat))
+
+    @staticmethod
+    def cross_entropy_derivative(Y: np.array, Y_hat: np.array):
+        if np.any(np.isclose(Y_hat, 0)):
+            print(Y, Y_hat)
+        return -Y / Y_hat
