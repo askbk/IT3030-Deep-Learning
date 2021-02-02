@@ -15,10 +15,13 @@ def test_applies_softmax():
     expected = np.array(
         [[0.09003057, 0.24472847, 0.66524096], [0.22487355, 0.27466117, 0.50046528]]
     )
+    print(output)
     assert np.all(np.isclose(output, expected))
 
 
-# def test_backward_pass_no_softmax():
-#     data = np.array([[1, 2, 3, 6, 4], [1, 2, 6, 3, 5]])
-#     output = OutputLayer(input_neurons=5, softmax=False).backward_pass()
-#     # assert np.all(np.isclose(output, np.diag(np.ones(5))))
+def test_backward_pass_no_softmax():
+    data = np.array([[1, 2, 3, 6, 4], [1, 2, 6, 3, 5]])
+    output = OutputLayer(input_neurons=5, softmax=False).backward_pass(
+        data, None, None
+    )[1]
+    assert np.all(np.isclose(output, data))
