@@ -20,7 +20,7 @@ class Layer:
             weights, input_neurons, neurons, initial_weight_range, use_bias
         )
 
-        if activation_function not in ("sigmoid", "tanh", "relu", "linear"):
+        if activation_function not in ("sigmoid", "tanh", "relu", "linear", "swish"):
             raise ValueError("Invalid activation function.")
         self._use_bias = use_bias
         self._neurons = neurons
@@ -53,16 +53,19 @@ class Layer:
         Applies the current activation function to the data.
         """
         if self._activation_function == "sigmoid":
-            return Activation._sigmoid(data)
+            return Activation.sigmoid(data)
 
         if self._activation_function == "tanh":
-            return Activation._tanh(data)
+            return Activation.tanh(data)
 
         if self._activation_function == "relu":
-            return Activation._relu(data)
+            return Activation.relu(data)
 
         if self._activation_function == "linear":
-            return Activation._linear(data)
+            return Activation.linear(data)
+
+        if self._activation_function == "swish":
+            return Activation.swish(data)
 
         raise NotImplementedError()
 
@@ -71,16 +74,19 @@ class Layer:
         Applies the current activation function to the data.
         """
         if self._activation_function == "sigmoid":
-            return Activation._sigmoid_derivative(data)
+            return Activation.sigmoid_derivative(data)
 
         if self._activation_function == "tanh":
-            return Activation._tanh_derivative(data)
+            return Activation.tanh_derivative(data)
 
         if self._activation_function == "relu":
-            return Activation._relu_derivative(data)
+            return Activation.relu_derivative(data)
 
         if self._activation_function == "linear":
-            return Activation._linear_derivative(data)
+            return Activation.linear_derivative(data)
+
+        if self._activation_function == "swish":
+            return Activation.swish_derivative(data)
 
         raise NotImplementedError()
 
@@ -118,8 +124,7 @@ class Layer:
         return J_L_W, J_L_Y
 
     def update_weights(self, jacobians, learning_rate):
-        mean_loss_jacobian = np.mean(jacobians, axis=0)
-        new_weights = self._weights + learning_rate * mean_loss_jacobian
+        new_weights = self._weights + learning_rate * np.sum(jacobians, axis=0)
 
         return Layer(
             input_neurons=self._input_neurons,

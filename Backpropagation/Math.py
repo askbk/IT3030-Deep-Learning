@@ -3,50 +3,58 @@ import numpy as np
 
 class Activation:
     @staticmethod
-    def _sigmoid(X):
+    def sigmoid(X):
         """
         Sigmoid function
         """
         return 1 / (1 + np.exp(-X))
 
     @staticmethod
-    def _sigmoid_derivative(X):
-        return Activation._sigmoid(X) * (1 - Activation._sigmoid(X))
+    def sigmoid_derivative(X):
+        return Activation.sigmoid(X) * (1 - Activation.sigmoid(X))
 
     @staticmethod
-    def _tanh(X):
+    def swish(X):
+        return X * Activation.sigmoid(X)
+
+    @staticmethod
+    def swish_derivative(X):
+        return Activation.swish(X) + Activation.sigmoid(X) * (1 - Activation.swish(X))
+
+    @staticmethod
+    def tanh(X):
         """
         Hyperbolic tangent
         """
         return np.tanh(X)
 
     @staticmethod
-    def _tanh_derivative(X):
+    def tanh_derivative(X):
         """
         Hyperbolic tangent
         """
-        return 1 - Activation._tanh(X) ** 2
+        return 1 - Activation.tanh(X) ** 2
 
     @staticmethod
-    def _linear(X):
+    def linear(X):
         """
         Linear function
         """
         return X
 
     @staticmethod
-    def _linear_derivative(X):
+    def linear_derivative(X):
         return np.ones_like(X)
 
     @staticmethod
-    def _relu(X):
+    def relu(X):
         """
         Rectified linear unit function
         """
         return np.maximum(X, 0)
 
     @staticmethod
-    def _relu_derivative(X):
+    def relu_derivative(X):
         return np.where(X <= 0, 0, 1)
 
 
