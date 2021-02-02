@@ -1,4 +1,4 @@
-from Backpropagation.NeuralNetwork.Layer import Layer
+from NeuralNetwork.Layer import Layer
 import numpy as np
 import pytest
 

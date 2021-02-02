@@ -1,10 +1,10 @@
 import numpy as np
-from Backpropagation.NeuralNetwork.Network import Network
-from Backpropagation.NeuralNetwork.Layer import Layer
-from Backpropagation.NeuralNetwork.InputLayer import InputLayer
-from Backpropagation.NeuralNetwork.OutputLayer import OutputLayer
-from Backpropagation.NeuralNetwork.Math import Loss
-from Backpropagation.DataUtils import randomize_dataset
+from NeuralNetwork.Network import Network
+from NeuralNetwork.Layer import Layer
+from NeuralNetwork.InputLayer import InputLayer
+from NeuralNetwork.OutputLayer import OutputLayer
+from NeuralNetwork.Math import Loss
+from DataUtils import randomize_dataset
 
 
 def test_network_constructor():

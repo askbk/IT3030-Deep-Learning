@@ -1,4 +1,4 @@
-from Backpropagation.ImageGenerator import ImageGenerator
+from ImageGenerator import ImageGenerator
 import pytest
 from itertools import chain
 

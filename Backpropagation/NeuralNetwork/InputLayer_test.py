@@ -1,4 +1,4 @@
-from Backpropagation.NeuralNetwork.InputLayer import InputLayer
+from NeuralNetwork.InputLayer import InputLayer
 import numpy as np
 
 

@@ -1,6 +1,6 @@
 from functools import reduce
 import numpy as np
-from Backpropagation.NeuralNetwork.Math import Loss
+from NeuralNetwork.Math import Loss
 
 
 class Network:

@@ -1,5 +1,5 @@
 import numpy as np
-from Backpropagation.NeuralNetwork.Math import Activation
+from NeuralNetwork.Math import Activation
 
 
 class Layer:
