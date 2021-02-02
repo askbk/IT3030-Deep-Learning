@@ -32,18 +32,22 @@ class Layer:
         weights, input_neurons, neurons, initial_weight_range, use_bias
     ):
         expected_shape = (input_neurons + 1 if use_bias else input_neurons, neurons)
+
         if weights is not None:
             if weights.shape != expected_shape:
                 raise ValueError(
                     f"Weight matrix must have shape ({expected_shape}), was {weights.shape}"
                 )
             return weights
-        else:
+
+        if initial_weight_range is not None:
             return np.random.uniform(
                 low=initial_weight_range[0],
                 high=initial_weight_range[1],
                 size=expected_shape,
             )
+
+        return np.random.rand(expected_shape)
 
     def _multiply_weights(self, X: np.array):
         return X @ self._weights
@@ -124,7 +128,7 @@ class Layer:
         return J_L_W, J_L_Y
 
     def update_weights(self, jacobians, learning_rate):
-        new_weights = self._weights + learning_rate * np.sum(jacobians, axis=0)
+        new_weights = self._weights - learning_rate * np.sum(jacobians, axis=0)
 
         return Layer(
             input_neurons=self._input_neurons,
