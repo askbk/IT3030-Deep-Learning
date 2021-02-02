@@ -1,4 +1,5 @@
 import numpy as np
+from scipy.special import expit, softmax
 
 
 class Activation:
@@ -7,7 +8,7 @@ class Activation:
         """
         Sigmoid function
         """
-        return 1 / (1 + np.exp(-X))
+        return expit(X)
 
     @staticmethod
     def sigmoid_derivative(X):
@@ -57,6 +58,18 @@ class Activation:
     def relu_derivative(X):
         return np.where(X <= 0, 0, 1)
 
+    @staticmethod
+    def softmax(X):
+        """
+        The softmax function.
+        """
+        return np.exp(X) / np.sum(np.exp(X), axis=0, keepdims=True)
+
+    @staticmethod
+    def softmax_derivative(X):
+        X_reshape = X.reshape((-1, 1))
+        return np.diagflat(X) - np.dot(X_reshape, X_reshape.T)
+
 
 class Loss:
     @staticmethod
@@ -76,6 +89,4 @@ class Loss:
 
     @staticmethod
     def cross_entropy_derivative(Y: np.array, Y_hat: np.array):
-        if np.any(np.isclose(Y_hat, 0)):
-            print(Y, Y_hat)
         return -Y / Y_hat
