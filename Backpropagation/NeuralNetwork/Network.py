@@ -35,15 +35,12 @@ class Network:
         )
 
     @staticmethod
-    def _split_data_into_minibatches(X, Y, minibatches):
-        minibatch_size = len(X) // minibatches
-        X_batches = [
-            X[i : i + minibatch_size] for i in range(0, len(X), minibatch_size)
+    def _split_data_into_minibatches(dataset, minibatches):
+        minibatch_size = len(dataset) // minibatches
+        return [
+            dataset[i : i + minibatch_size]
+            for i in range(0, len(dataset), minibatch_size)
         ]
-        Y_batches = [
-            Y[i : i + minibatch_size] for i in range(0, len(Y), minibatch_size)
-        ]
-        return zip(X_batches, Y_batches)
 
     def forward_pass(self, X):
         """
@@ -104,9 +101,7 @@ class Network:
         return reversed(weight_jacobians)
 
     def _train_minibatch(self, batch):
-        X, Y = batch
-
-        weight_jacobians = map(lambda case: self._forward_backward(case), zip(X, Y))
+        weight_jacobians = map(lambda case: self._forward_backward(case), batch)
 
         updated_layers = list(
             map(
@@ -119,12 +114,12 @@ class Network:
 
         return Network._update_layers(self, updated_layers)
 
-    def train(self, X, Y, minibatches):
+    def train(self, dataset, minibatches):
         """
         Returns a new instance of the Network that is trained with X and Y.
         """
         return reduce(
             lambda network, batch: network._train_minibatch(batch),
-            Network._split_data_into_minibatches(X, Y, minibatches),
+            Network._split_data_into_minibatches(dataset, minibatches),
             self,
         )
