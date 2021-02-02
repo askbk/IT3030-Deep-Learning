@@ -63,7 +63,7 @@ class Activation:
         """
         The softmax function.
         """
-        return np.exp(X) / np.sum(np.exp(X), axis=0, keepdims=True)
+        return softmax(X, axis=0)
 
     @staticmethod
     def softmax_derivative(X):
