@@ -3,6 +3,7 @@ from Layer import Layer
 from InputLayer import InputLayer
 from OutputLayer import OutputLayer
 from Math import Loss
+from DataUtils import randomize_dataset
 import numpy as np
 
 
@@ -96,30 +97,31 @@ def test_training_base_case():
             Layer(
                 input_neurons=2,
                 neurons=2,
-                activation_function="sigmoid",
+                activation_function="relu",
                 use_bias=True,
-                initial_weight_range=(-1, 1),
             ),
             Layer(
                 input_neurons=2,
                 neurons=1,
-                activation_function="sigmoid",
+                activation_function="relu",
                 use_bias=True,
-                initial_weight_range=(-1, 1),
             ),
             OutputLayer(input_neurons=1),
         ],
         regularization=False,
         loss_function="mse",
-        learning_rate=0.1,
+        learning_rate=0.01,
     )
 
     minibatch_x = [[0, 0], [0, 1], [1, 0], [1, 1]]
     minibatch_y = [[0], [1], [1], [0]]
-
+    minibatch_count = 5000
+    X, Y = randomize_dataset(
+        minibatch_x * minibatch_count, minibatch_y * minibatch_count
+    )
     before_tranining = np.array([network.forward_pass(x) for x in minibatch_x])
     trained_network = network.train(
-        np.array(minibatch_x * 1000), np.array(minibatch_y * 1000), minibatches=1000
+        np.array(X), np.array(Y), minibatches=minibatch_count
     )
 
     output_after_training = np.array(
@@ -127,5 +129,5 @@ def test_training_base_case():
     )
     print(output_after_training)
     print(
-        f"Error before training: {Loss._mean_squared_error(before_tranining, minibatch_y)}\nError after training: {Loss._mean_squared_error(output_after_training, minibatch_y)}"
+        f"Error before training: {Loss.mean_squared_error(before_tranining, minibatch_y)}\nError after training: {Loss.mean_squared_error(output_after_training, minibatch_y)}"
     )
