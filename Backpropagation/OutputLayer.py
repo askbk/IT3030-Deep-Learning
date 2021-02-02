@@ -15,7 +15,7 @@ class OutputLayer:
         """
         The softmax function.
         """
-        return np.exp(X) / np.sum(np.exp(X), axis=1, keepdims=True)
+        return np.exp(X) / np.sum(np.exp(X), axis=0, keepdims=True)
 
     @staticmethod
     def _softmax_derivative(X):
@@ -41,7 +41,4 @@ class OutputLayer:
         return OutputLayer._softmax(data)
 
     def update_weights(self, jacobians, learning_rate):
-        if not self._use_softmax:
-            return self
-
         return self
