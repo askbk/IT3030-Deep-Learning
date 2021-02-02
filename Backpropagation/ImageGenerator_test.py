@@ -28,7 +28,8 @@ def test_correct_side_length():
 
     assert all(
         map(
-            lambda image: len(image) == side_length and len(image[0]) == side_length,
+            lambda image: len(image[0]) == side_length
+            and len(image[0][0]) == side_length,
             [*training, *validation, *test],
         )
     )
@@ -42,7 +43,7 @@ def test_flatten():
 
     assert all(
         map(
-            lambda image: len(image) == side_length * side_length,
+            lambda image: len(image[0]) == side_length * side_length,
             [*training, *test, *validation],
         )
     )
@@ -65,7 +66,10 @@ def test_images_are_binary_arrays():
     assert all(
         map(
             lambda image: all(
-                map(lambda pixel: pixel == 1 or pixel == 0, chain.from_iterable(image))
+                map(
+                    lambda pixel: pixel == 1 or pixel == 0,
+                    chain.from_iterable(image[0]),
+                )
             ),
             [*training, *validation, *test],
         )

@@ -80,8 +80,11 @@ class ImageGenerator:
                 rel_tol=tolerance,
             )
 
-        return ImageGenerator._generate_generic_figure(
-            side_length, figure_function=should_be_colored
+        return (
+            ImageGenerator._generate_generic_figure(
+                side_length, figure_function=should_be_colored
+            ),
+            "circle",
         )
 
     @staticmethod
@@ -97,8 +100,11 @@ class ImageGenerator:
                 or math.isclose(y, center[1], abs_tol=tolerance)
             )
 
-        return ImageGenerator._generate_generic_figure(
-            side_length, figure_function=should_be_colored
+        return (
+            ImageGenerator._generate_generic_figure(
+                side_length, figure_function=should_be_colored
+            ),
+            "cross",
         )
 
     @staticmethod
@@ -129,8 +135,11 @@ class ImageGenerator:
                 and lte(v_distance, v_deviation)
             )
 
-        return ImageGenerator._generate_generic_figure(
-            side_length, figure_function=should_be_colored
+        return (
+            ImageGenerator._generate_generic_figure(
+                side_length, figure_function=should_be_colored
+            ),
+            "rectangle",
         )
 
     @staticmethod
@@ -182,8 +191,11 @@ class ImageGenerator:
         def should_be_colored(x, y):
             return is_on_left_leg(x, y) or is_on_right_leg(x, y) or is_on_base(x, y)
 
-        return ImageGenerator._generate_generic_figure(
-            side_length, figure_function=should_be_colored
+        return (
+            ImageGenerator._generate_generic_figure(
+                side_length, figure_function=should_be_colored
+            ),
+            "triangle",
         )
 
     @staticmethod
@@ -193,22 +205,27 @@ class ImageGenerator:
         """
         Generates a random figure.
         """
-        return ImageGenerator._add_noise(
-            image=random.choice(
-                [
-                    ImageGenerator._generate_circle,
-                    ImageGenerator._generate_cross,
-                    ImageGenerator._generate_rectangle,
-                    ImageGenerator._generate_triangle,
-                ]
-            )(
-                side_length=side_length,
-                figure_size=figure_size,
-                center=ImageGenerator._calculate_figure_center(
-                    side_length, figure_size, centered
-                ),
+        image, figure_class = random.choice(
+            [
+                ImageGenerator._generate_circle,
+                ImageGenerator._generate_cross,
+                ImageGenerator._generate_rectangle,
+                ImageGenerator._generate_triangle,
+            ]
+        )(
+            side_length=side_length,
+            figure_size=figure_size,
+            center=ImageGenerator._calculate_figure_center(
+                side_length, figure_size, centered
             ),
-            noise=noise,
+        )
+
+        return (
+            ImageGenerator._add_noise(
+                image=image,
+                noise=noise,
+            ),
+            figure_class,
         )
 
     @staticmethod
@@ -219,7 +236,11 @@ class ImageGenerator:
         if not flatten:
             return image_set
 
-        return list(map(lambda image: list(chain.from_iterable(image)), image_set))
+        return list(
+            map(
+                lambda image: (list(chain.from_iterable(image[0])), image[1]), image_set
+            )
+        )
 
     @staticmethod
     def _split_image_set(image_set: List, image_set_fractions: Tuple[float]):
@@ -269,7 +290,8 @@ class ImageGenerator:
         noise=0.003,
     ):
         """
-        Generates images.
+        Generates random images of circles, crosses, rectangles and triangles.
+        Returns on the form ()
         """
         return tuple(
             map(
