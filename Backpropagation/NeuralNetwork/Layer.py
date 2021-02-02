@@ -47,7 +47,7 @@ class Layer:
                 size=expected_shape,
             )
 
-        return np.random.rand(expected_shape)
+        return np.random.random_sample(expected_shape)
 
     def _multiply_weights(self, X: np.array):
         return X @ self._weights
