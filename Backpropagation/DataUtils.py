@@ -17,7 +17,8 @@ def translate_labels_to_neuron_activation(dataset):
 
     def translated(label):
         return np.array(
-            [1 if neuron_dict[label] == x else 0 for x in range(neuron_count)]
+            [1 if neuron_dict[label] == x else 0 for x in range(neuron_count)],
+            dtype=np.float64,
         )
 
     return list(map(lambda case: (case[0], translated(case[1])), dataset))
