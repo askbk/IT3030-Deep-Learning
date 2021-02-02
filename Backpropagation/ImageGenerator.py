@@ -313,7 +313,7 @@ class ImageGenerator:
 
 
 if __name__ == "__main__":
-    from ImageViewer import ImageViewer
+    from Backpropagation.ImageViewer import ImageViewer
 
     images = ImageGenerator().generate(side_length=50, centered=False)[0]
 
