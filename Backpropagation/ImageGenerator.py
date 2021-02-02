@@ -238,7 +238,8 @@ class ImageGenerator:
 
         return list(
             map(
-                lambda image: (list(chain.from_iterable(image[0])), image[1]), image_set
+                lambda image: (np.array(list(chain.from_iterable(image[0]))), image[1]),
+                image_set,
             )
         )
 
@@ -313,7 +314,7 @@ class ImageGenerator:
 
 
 if __name__ == "__main__":
-    from Backpropagation.ImageViewer import ImageViewer
+    from ImageViewer import ImageViewer
 
     images = ImageGenerator().generate(side_length=50, centered=False)[0]
 
