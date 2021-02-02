@@ -66,13 +66,19 @@ class Network:
         docstring
         """
         if self._loss_function == "mse":
-            return Loss._mean_squared_error(Y, Y_hat)
+            return Loss.mean_squared_error(Y, Y_hat)
+
+        if self._loss_function == "cross_entropy":
+            return Loss.cross_entropy(Y, Y_hat)
 
         raise NotImplementedError
 
     def _apply_loss_function_derivative(self, Y, Y_hat):
         if self._loss_function == "mse":
-            return Loss._mean_squared_error_derivative(Y, Y_hat)
+            return Loss.mean_squared_error_derivative(Y, Y_hat)
+
+        if self._loss_function == "cross_entropy":
+            return Loss.cross_entropy_derivative(Y, Y_hat)
 
         raise NotImplementedError
 
@@ -84,12 +90,11 @@ class Network:
         x, y = case
         layer_outputs = self._cached_forward_pass(x)
         loss_jacobian = np.array(
-            [self._apply_loss_function_derivative(layer_outputs[-1], y)]
+            [self._apply_loss_function_derivative(y, layer_outputs[-1])]
         )
         weight_jacobians = list()
         downstream_jacobian = loss_jacobian
         for index in reversed(range(len(self._layers))):
-            # print(f"layer {index} of {len(self._layers) - 1}")
             weight_jacobian, pass_down = self._layers[index].backward_pass(
                 downstream_jacobian, layer_outputs[index], layer_outputs[index - 1]
             )
@@ -103,14 +108,16 @@ class Network:
 
         weight_jacobians = map(lambda case: self._forward_backward(case), zip(X, Y))
 
-        updated_layers = map(
-            lambda layer_jacobians: layer_jacobians[0].update_weights(
-                layer_jacobians[1], self._learning_rate
-            ),
-            zip(self._layers, zip(*weight_jacobians)),
+        updated_layers = list(
+            map(
+                lambda layer_jacobians: layer_jacobians[0].update_weights(
+                    layer_jacobians[1], self._learning_rate
+                ),
+                zip(self._layers, zip(*weight_jacobians)),
+            )
         )
 
-        return Network._update_layers(self, list(updated_layers))
+        return Network._update_layers(self, updated_layers)
 
     def train(self, X, Y, minibatches):
         """
