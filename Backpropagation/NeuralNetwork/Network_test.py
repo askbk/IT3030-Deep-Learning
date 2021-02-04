@@ -97,18 +97,19 @@ def test_training_base_case():
             Layer(
                 input_neurons=2,
                 neurons=2,
-                activation_function="relu",
+                activation_function="sigmoid",
                 use_bias=True,
             ),
             Layer(
                 input_neurons=2,
                 neurons=1,
-                activation_function="relu",
+                activation_function="sigmoid",
                 use_bias=True,
             ),
             OutputLayer(input_neurons=1),
         ],
-        regularization=False,
+        regularization="l2",
+        regularization_rate=0.001,
         loss_function="mse",
         learning_rate=0.01,
     )

@@ -19,6 +19,8 @@ class Network:
         self._layers = layers
         self._loss_function = loss_function
         self._learning_rate = learning_rate
+        self._regularization = regularization
+        self._regularization_rate = regularization_rate
 
     @staticmethod
     def _update_layers(old, layers):
@@ -58,15 +60,40 @@ class Network:
             [X],
         )
 
+    def _apply_penalty_function(self):
+        if self._regularization is None:
+            return 0
+
+        weights = np.concatenate(
+            [layer.get_weights().flatten() for layer in self._layers]
+        )
+
+        if self._regularization == "l1":
+            return Loss.L1_regularization(weights) * self._regularization_rate
+
+        if self._regularization == "l2":
+            return Loss.L2_regularization(weights) * self._regularization_rate
+
+        raise NotImplementedError
+
+    def _apply_regularization_derivative(self, weights):
+        if self._regularization is None or weights is None:
+            return np.zeros_like(weights)
+
+        if self._regularization == "l1":
+            return self._regularization_rate * np.sign(weights)
+
+        if self._regularization == "l2":
+            return self._regularization_rate * weights
+
+        raise NotImplementedError
+
     def _apply_loss_function(self, Y, Y_hat):
-        """
-        docstring
-        """
         if self._loss_function == "mse":
-            return Loss.mean_squared_error(Y, Y_hat)
+            return Loss.mean_squared_error(Y, Y_hat) + self._apply_penalty_function()
 
         if self._loss_function == "cross_entropy":
-            return Loss.cross_entropy(Y, Y_hat)
+            return Loss.cross_entropy(Y, Y_hat) + self._apply_penalty_function()
 
         raise NotImplementedError
 
@@ -106,13 +133,21 @@ class Network:
 
     def _train_minibatch(self, batch):
         weight_jacobians = map(lambda case: self._forward_backward(case), batch)
+        regularization_jacobians = map(
+            lambda layer: self._apply_regularization_derivative(layer.get_weights()),
+            self._layers,
+        )
+
+        def update_layer_weights(args):
+            layer, weight_jac, reg_jac = args
+            return layer.update_weights(
+                list(weight_jac + (reg_jac,)), self._learning_rate
+            )
 
         updated_layers = list(
             map(
-                lambda layer_jacobians: layer_jacobians[0].update_weights(
-                    layer_jacobians[1], self._learning_rate
-                ),
-                zip(self._layers, zip(*weight_jacobians)),
+                update_layer_weights,
+                zip(self._layers, zip(*weight_jacobians), regularization_jacobians),
             )
         )
 

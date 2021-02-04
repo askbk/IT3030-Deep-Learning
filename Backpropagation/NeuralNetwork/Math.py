@@ -90,3 +90,11 @@ class Loss:
     @staticmethod
     def cross_entropy_derivative(Y: np.array, Y_hat: np.array):
         return -Y / Y_hat
+
+    @staticmethod
+    def L1_regularization(parameters):
+        return np.sum(np.abs(parameters))
+
+    @staticmethod
+    def L2_regularization(parameters):
+        return 0.5 * np.sum(parameters ** 2)

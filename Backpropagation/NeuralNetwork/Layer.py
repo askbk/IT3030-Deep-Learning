@@ -137,3 +137,6 @@ class Layer:
             weights=new_weights,
             use_bias=self._use_bias,
         )
+
+    def get_weights(self):
+        return self._weights

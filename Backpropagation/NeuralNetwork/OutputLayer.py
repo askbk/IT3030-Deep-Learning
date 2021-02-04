@@ -31,3 +31,6 @@ class OutputLayer:
 
     def update_weights(self, jacobians, learning_rate):
         return self
+
+    def get_weights(self):
+        return None
