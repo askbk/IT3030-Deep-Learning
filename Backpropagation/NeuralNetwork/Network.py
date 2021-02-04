@@ -74,7 +74,9 @@ class Network:
         if self._regularization == "l2":
             return Loss.L2_regularization(weights) * self._regularization_rate
 
-        raise NotImplementedError
+        raise NotImplementedError(
+            f"Regularization function {self._regularization} not implemented."
+        )
 
     def _apply_regularization_derivative(self, weights):
         if self._regularization is None or weights is None:
@@ -86,7 +88,9 @@ class Network:
         if self._regularization == "l2":
             return self._regularization_rate * weights
 
-        raise NotImplementedError
+        raise NotImplementedError(
+            f"Regularization function {self._regularization} not implemented."
+        )
 
     def _apply_loss_function(self, Y, Y_hat):
         if self._loss_function == "mse":
@@ -95,7 +99,9 @@ class Network:
         if self._loss_function == "cross_entropy":
             return Loss.cross_entropy(Y, Y_hat) + self._apply_penalty_function()
 
-        raise NotImplementedError
+        raise NotImplementedError(
+            f"Loss function {self._loss_function} not implemented."
+        )
 
     def _apply_loss_function_derivative(self, Y, Y_hat):
         if self._loss_function == "mse":
@@ -104,7 +110,9 @@ class Network:
         if self._loss_function == "cross_entropy":
             return Loss.cross_entropy_derivative(Y, Y_hat)
 
-        raise NotImplementedError
+        raise NotImplementedError(
+            f"Loss function {self._loss_function} not implemented."
+        )
 
     def _forward_backward(self, case):
         """

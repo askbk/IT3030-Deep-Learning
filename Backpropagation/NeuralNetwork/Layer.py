@@ -71,7 +71,9 @@ class Layer:
         if self._activation_function == "swish":
             return Activation.swish(data)
 
-        raise NotImplementedError()
+        raise NotImplementedError(
+            f"Activation function {self._activation_function} not implemented."
+        )
 
     def _apply_activation_function_derivative(self, data):
         """
@@ -92,7 +94,9 @@ class Layer:
         if self._activation_function == "swish":
             return Activation.swish_derivative(data)
 
-        raise NotImplementedError()
+        raise NotImplementedError(
+            f"Activation function {self._activation_function} not implemented."
+        )
 
     def _add_bias_neuron_conditionally(self, data):
         if self._use_bias:
