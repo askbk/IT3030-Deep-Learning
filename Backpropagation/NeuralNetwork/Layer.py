@@ -112,6 +112,9 @@ class Layer:
         """
         Data is a row-vector representing a single test case.
         """
+        if len(data.shape) != 1:
+            raise ValueError("Layer only supports 1-dimensional arrays as input.")
+
         return self._apply_activation_function(
             self._multiply_weights(self._add_bias_neuron_conditionally(data))
         )
