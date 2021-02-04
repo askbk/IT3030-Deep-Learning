@@ -1,38 +1,41 @@
 import numpy as np
-from NeuralNetwork.Network import Network
-from NeuralNetwork.Layer import Layer
-from NeuralNetwork.InputLayer import InputLayer
-from NeuralNetwork.OutputLayer import OutputLayer
 from NeuralNetwork.Math import Loss
 from ImageGenerator import ImageGenerator
 from DataUtils import translate_labels_to_neuron_activation
+from NetworkFactory import NetworkFactory
 
 
 def run_image_classification():
-    train, validate, _ = ImageGenerator.generate(
-        side_length=10, flatten=True, image_set_size=1000
+    train, validate = ImageGenerator.generate(
+        side_length=10,
+        flatten=True,
+        image_set_size=1000,
+        image_set_fractions=(0.9, 0.1),
     )
 
-    network = Network(
-        layers=[
-            InputLayer(),
-            Layer(input_neurons=100, neurons=1000),
-            Layer(input_neurons=1000, neurons=1000),
-            Layer(input_neurons=1000, neurons=500),
-            Layer(input_neurons=500, neurons=4),
-            OutputLayer(input_neurons=4, softmax=True),
-        ],
-        loss_function="cross_entropy",
-        regularization=None,
-        learning_rate=0.01,
-    ).train(translate_labels_to_neuron_activation(train), minibatches=10)
+    network = NetworkFactory.new_network("./network_config.json").train(
+        translate_labels_to_neuron_activation(train), minibatches=100
+    )
+    translated_validation = translate_labels_to_neuron_activation(validate)
+
+    validation_output = [
+        (
+            Y,
+            network.forward_pass(X),
+            Loss.cross_entropy(Y, network.forward_pass(X)),
+        )
+        for X, Y in translated_validation
+    ]
     validation_error = np.mean(
         [
             Loss.cross_entropy(Y, network.forward_pass(X))
-            for X, Y in translate_labels_to_neuron_activation(validate)
+            for X, Y in translated_validation
         ]
     )
+
     print(f"avg validation error: {validation_error}")
+    print(validation_output[:5])
+    print([Y for X, Y in validate[:5]])
 
 
 if __name__ == "__main__":
