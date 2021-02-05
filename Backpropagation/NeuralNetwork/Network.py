@@ -31,10 +31,8 @@ class Network:
         return Network(
             layers=layers,
             loss_function=old._loss_function,
-            regularization=None,
-            regularization_rate=None,
-            # regularization=old._regularization,
-            # regularization_rate=old._regularization_rate,
+            regularization=old._regularization,
+            regularization_rate=old._regularization_rate,
         )
 
     @staticmethod
@@ -207,4 +205,12 @@ class Network:
             self._train(validation_set),
             Network._split_data_into_minibatches(training_set, minibatches),
             (self, np.array([]), np.array([])),
+        )
+
+    def test(self, test_set):
+        """
+        Returns average performance on test set
+        """
+        return np.mean(
+            [self._apply_loss_function(y, self.forward_pass(x)) for x, y in test_set]
         )

@@ -120,7 +120,7 @@ def test_training_base_case():
         (np.array([1, 0]), [1]),
         (np.array([1, 1]), [0]),
     ]
-    minibatch_count = 5000
+    minibatch_count = 500
     dataset = randomize_dataset(minibatch * minibatch_count)
     before_tranining = np.array([network.forward_pass(x) for x, y in minibatch])
     trained_network, *_ = network.train(dataset, minibatches=minibatch_count)
@@ -132,3 +132,42 @@ def test_training_base_case():
     print(
         f"Error before training: {Loss.mean_squared_error(before_tranining, [y for x, y in minibatch])}\nError after training: {Loss.mean_squared_error(output_after_training, [y for x, y in minibatch])}"
     )
+
+
+def test_network_test():
+    network = Network(
+        layers=[
+            InputLayer(),
+            Layer(
+                input_neurons=2,
+                neurons=2,
+                activation_function="sigmoid",
+                use_bias=True,
+            ),
+            Layer(
+                input_neurons=2,
+                neurons=1,
+                activation_function="sigmoid",
+                use_bias=True,
+            ),
+            OutputLayer(input_neurons=1),
+        ],
+        regularization="l2",
+        regularization_rate=0.001,
+        loss_function="mse",
+        learning_rate=0.01,
+    )
+
+    minibatch = [
+        (np.array([0, 0]), [0]),
+        (np.array([0, 1]), [1]),
+        (np.array([1, 0]), [1]),
+        (np.array([1, 1]), [0]),
+    ]
+    minibatch_count = 500
+    dataset = randomize_dataset(minibatch * minibatch_count)
+    trained_network, *_ = network.train(dataset, minibatches=minibatch_count)
+
+    test_performance = trained_network.test(minibatch)
+
+    assert test_performance is not None
