@@ -114,11 +114,16 @@ def test_training_base_case():
         learning_rate=0.01,
     )
 
-    minibatch = [([0, 0], [0]), ([0, 1], [1]), ([1, 0], [1]), ([1, 1], [0])]
+    minibatch = [
+        (np.array([0, 0]), [0]),
+        (np.array([0, 1]), [1]),
+        (np.array([1, 0]), [1]),
+        (np.array([1, 1]), [0]),
+    ]
     minibatch_count = 5000
     dataset = randomize_dataset(minibatch * minibatch_count)
     before_tranining = np.array([network.forward_pass(x) for x, y in minibatch])
-    trained_network = network.train(dataset, minibatches=minibatch_count)
+    trained_network, *_ = network.train(dataset, minibatches=minibatch_count)
 
     output_after_training = np.array(
         [trained_network.forward_pass(x) for x, y in minibatch]
