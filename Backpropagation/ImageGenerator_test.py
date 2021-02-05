@@ -10,7 +10,7 @@ def test_generates_correct_number_of_images():
 
 def test_generates_correct_set_fractions():
     training, validation, test = ImageGenerator.generate(
-        image_set_fractions=(0.7, 0.2, 0.1), image_set_size=400
+        dataset_split=(0.7, 0.2, 0.1), image_set_size=400
     )
 
     total = len(training) + len(validation) + len(test)
@@ -51,13 +51,13 @@ def test_flatten():
 
 def test_invalid_image_set_fraction_throws_exception():
     with pytest.raises(ValueError):
-        ImageGenerator.generate(image_set_fractions=(-1, 2, 0))
+        ImageGenerator.generate(dataset_split=(-1, 2, 0))
 
     with pytest.raises(ValueError):
-        ImageGenerator.generate(image_set_fractions=(0.6, 0.6, 0.1))
+        ImageGenerator.generate(dataset_split=(0.6, 0.6, 0.1))
 
     with pytest.raises(ValueError):
-        ImageGenerator.generate(image_set_fractions=(0.2, 0.2, 0.2))
+        ImageGenerator.generate(dataset_split=(0.2, 0.2, 0.2))
 
 
 def test_images_are_binary_arrays():

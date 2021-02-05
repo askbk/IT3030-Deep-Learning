@@ -284,8 +284,9 @@ class ImageGenerator:
     @staticmethod
     def generate(
         image_set_size=100,
-        image_set_fractions=(0.7, 0.2, 0.1),
+        dataset_split=(0.7, 0.2, 0.1),
         side_length=10,
+        figure_size_range=(5, 10),
         flatten=False,
         centered=False,
         noise=0.003,
@@ -307,7 +308,7 @@ class ImageGenerator:
                         noise=noise,
                         image_set_size=image_set_size,
                     ),
-                    image_set_fractions=image_set_fractions,
+                    image_set_fractions=dataset_split,
                 ),
             )
         )
