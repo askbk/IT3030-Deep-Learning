@@ -17,7 +17,7 @@ def run_image_classification():
         minibatches=500,
         validation_set=translated_validation,
     )
-    testing_performance = np.array([])
+    testing_performance = network.test(translate_labels_to_neuron_activation(test))
 
     PerformanceDisplay.display_performance(
         training_performance, validation_performance, testing_performance
