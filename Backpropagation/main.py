@@ -1,18 +1,13 @@
 import numpy as np
 from NeuralNetwork.Math import Loss
-from ImageGenerator import ImageGenerator
+from DatasetFactory import DatasetFactory
 from DataUtils import translate_labels_to_neuron_activation
 from NetworkFactory import NetworkFactory
 from PerformanceDisplay import PerformanceDisplay
 
 
 def run_image_classification():
-    train, validate, test = ImageGenerator.generate(
-        side_length=10,
-        flatten=True,
-        image_set_size=5000,
-        image_set_fractions=(0.7, 0.2, 0.1),
-    )
+    train, validate, test = DatasetFactory.new_dataset("./dataset_config.json")
 
     translated_validation = translate_labels_to_neuron_activation(validate)
     network, training_performance, validation_performance = NetworkFactory.new_network(
