@@ -13,7 +13,6 @@ def test_applies_softmax():
     data = np.array([1, 2, 3])
     output = OutputLayer(input_neurons=3, softmax=True).forward_pass(data)
     expected = np.array([0.09003057, 0.24472847, 0.66524096])
-    print(output)
     assert np.all(np.isclose(output, expected))
 
 

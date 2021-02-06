@@ -164,18 +164,8 @@ class Network:
 
         return Network._update_layers(self, updated_layers), np.mean(case_loss)
 
-    def _train(self, validation_set):
-        def train_without_validation(acc: Tuple[Network, np.array], batch):
-            network, acc_training_performance, *_ = acc
-            trained, training_performance = network._train_minibatch(batch)
-            return trained, np.concatenate(
-                (acc_training_performance, np.array([training_performance]))
-            )
-
-        if validation_set is None:
-            return train_without_validation
-
-        def train_with_validation(acc: Tuple[Network, np.array], batch):
+    def _train_with_validation(self, validation_set):
+        def train_with_validation(acc: Tuple[Network, np.array, np.array], batch):
             network, acc_training_performance, acc_validation_performance = acc
             trained, training_performance = network._train_minibatch(batch)
             validation_performance = np.mean(
@@ -196,6 +186,22 @@ class Network:
             )
 
         return train_with_validation
+
+    def _train_without_validation(self):
+        def train_without_validation(acc: Tuple[Network, np.array], batch):
+            network, acc_training_performance, *_ = acc
+            trained, training_performance = network._train_minibatch(batch)
+            return trained, np.concatenate(
+                (acc_training_performance, np.array([training_performance]))
+            )
+
+        return train_without_validation
+
+    def _train(self, validation_set):
+        if validation_set is None:
+            return self._train_without_validation()
+
+        return self._train_with_validation(validation_set)
 
     def train(self, training_set, minibatches, validation_set=None):
         """

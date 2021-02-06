@@ -120,17 +120,10 @@ def test_training_base_case():
         (np.array([1, 0]), [1]),
         (np.array([1, 1]), [0]),
     ]
-    minibatch_count = 500
+    minibatch_count = 10
     dataset = randomize_dataset(minibatch * minibatch_count)
-    before_tranining = np.array([network.forward_pass(x) for x, y in minibatch])
-    trained_network, *_ = network.train(dataset, minibatches=minibatch_count)
-
-    output_after_training = np.array(
-        [trained_network.forward_pass(x) for x, y in minibatch]
-    )
-    print(output_after_training)
-    print(
-        f"Error before training: {Loss.mean_squared_error(before_tranining, [y for x, y in minibatch])}\nError after training: {Loss.mean_squared_error(output_after_training, [y for x, y in minibatch])}"
+    _trained_network, *_ = network.train(
+        dataset, minibatches=minibatch_count, verbose=True, validation_set=minibatch
     )
 
 
