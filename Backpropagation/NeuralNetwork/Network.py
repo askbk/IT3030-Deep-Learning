@@ -144,6 +144,14 @@ class Network:
             y, layer_outputs[-1]
         )
 
+    def _validate(self, validation_set):
+        return np.mean(
+            [
+                self._apply_loss_function(y, self.forward_pass(x))
+                for x, y in validation_set
+            ]
+        )
+
     def _train_minibatch(self, batch, verbose=False):
         weight_jacobians, case_loss = zip(
             *map(lambda case: self._forward_backward(case, verbose=verbose), batch)
@@ -174,21 +182,12 @@ class Network:
             trained, training_performance = network._train_minibatch(
                 batch, verbose=verbose
             )
-            validation_performance = np.mean(
-                [
-                    self._apply_loss_function(y, trained.forward_pass(x))
-                    for x, y in validation_set
-                ]
-            )
+            validation_performance = self._validate(validation_set)
 
             return (
                 trained,
-                np.concatenate(
-                    (acc_training_performance, np.array([training_performance]))
-                ),
-                np.concatenate(
-                    (acc_validation_performance, np.array([validation_performance]))
-                ),
+                np.array([*acc_training_performance, training_performance]),
+                np.array([*acc_validation_performance, validation_performance]),
             )
 
         return train_with_validation
@@ -199,9 +198,7 @@ class Network:
             trained, training_performance = network._train_minibatch(
                 batch, verbose=verbose
             )
-            return trained, np.concatenate(
-                (acc_training_performance, np.array([training_performance]))
-            )
+            return trained, np.array([*acc_training_performance, training_performance])
 
         return train_without_validation
 
