@@ -113,13 +113,17 @@ class Network:
             f"Loss function {self._loss_function} not implemented."
         )
 
-    def _forward_backward(self, case):
+    def _forward_backward(self, case, verbose=False):
         """
         Performs a forward pass, followed by a backward pass.
         Returns the weight jacobian for each layer.
         """
         x, y = case
         layer_outputs = self._cached_forward_pass(np.array(x, dtype=np.float64))
+        if verbose:
+            print(
+                f"Input: {x}\tOutput: {layer_outputs[-1]}\tTrue: {y}\tLoss: {self._apply_loss_function(y, layer_outputs[-1])}"
+            )
         loss_jacobian = np.array(
             [
                 self._apply_loss_function_derivative(
@@ -140,9 +144,9 @@ class Network:
             y, layer_outputs[-1]
         )
 
-    def _train_minibatch(self, batch):
+    def _train_minibatch(self, batch, verbose=False):
         weight_jacobians, case_loss = zip(
-            *map(lambda case: self._forward_backward(case), batch)
+            *map(lambda case: self._forward_backward(case, verbose=verbose), batch)
         )
         regularization_jacobians = map(
             lambda layer: self._apply_regularization_derivative(layer.get_weights()),
@@ -164,10 +168,12 @@ class Network:
 
         return Network._update_layers(self, updated_layers), np.mean(case_loss)
 
-    def _train_with_validation(self, validation_set):
+    def _train_with_validation(self, validation_set, verbose=False):
         def train_with_validation(acc: Tuple[Network, np.array, np.array], batch):
             network, acc_training_performance, acc_validation_performance = acc
-            trained, training_performance = network._train_minibatch(batch)
+            trained, training_performance = network._train_minibatch(
+                batch, verbose=verbose
+            )
             validation_performance = np.mean(
                 [
                     self._apply_loss_function(y, trained.forward_pass(x))
@@ -187,28 +193,30 @@ class Network:
 
         return train_with_validation
 
-    def _train_without_validation(self):
+    def _train_without_validation(self, verbose=False):
         def train_without_validation(acc: Tuple[Network, np.array], batch):
             network, acc_training_performance, *_ = acc
-            trained, training_performance = network._train_minibatch(batch)
+            trained, training_performance = network._train_minibatch(
+                batch, verbose=verbose
+            )
             return trained, np.concatenate(
                 (acc_training_performance, np.array([training_performance]))
             )
 
         return train_without_validation
 
-    def _train(self, validation_set):
+    def _train(self, validation_set, verbose=False):
         if validation_set is None:
-            return self._train_without_validation()
+            return self._train_without_validation(verbose=verbose)
 
-        return self._train_with_validation(validation_set)
+        return self._train_with_validation(validation_set, verbose=verbose)
 
-    def train(self, training_set, minibatches, validation_set=None):
+    def train(self, training_set, minibatches, validation_set=None, verbose=False):
         """
         Returns a new instance of the Network that is trained with X and Y.
         """
         return reduce(
-            self._train(validation_set),
+            self._train(validation_set, verbose=verbose),
             Network._split_data_into_minibatches(training_set, minibatches),
             (self, np.array([]), np.array([])),
         )
