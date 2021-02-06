@@ -30,14 +30,24 @@ class ImageGenerator:
         )
 
     @staticmethod
-    def _distance(point_a: Tuple[int], point_b: Tuple[int]):
+    def _l2_distance(point_a: Tuple[int], point_b: Tuple[int]):
         """
-        Calculate distance between points in 2D
+        Calculate L2 distance between points in 2D
         """
         x1, y1 = point_a
         x2, y2 = point_b
 
         return math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
+
+    @staticmethod
+    def _l1_distance(point_a: Tuple[int], point_b: Tuple[int]):
+        """
+        Calculate L1 distance between points in 2D
+        """
+        x1, y1 = point_a
+        x2, y2 = point_b
+
+        return abs(x1 - x2) + abs(y1 - y2)
 
     @staticmethod
     def _add_noise(image, noise):
@@ -71,13 +81,12 @@ class ImageGenerator:
         """
         Generates a circle
         """
-        tolerance = 0.3 / math.log2(figure_size)
 
         def should_be_colored(x, y):
             return math.isclose(
                 figure_size / 2,
-                ImageGenerator._distance((x, y), center),
-                rel_tol=tolerance,
+                ImageGenerator._l2_distance((x, y), center),
+                abs_tol=0.8,
             )
 
         return (
@@ -92,10 +101,10 @@ class ImageGenerator:
         """
         Generates a cross
         """
-        tolerance = math.log2(figure_size) * 0.3
+        tolerance = 0.5
 
         def should_be_colored(x, y):
-            return ImageGenerator._distance((x, y), center) <= figure_size and (
+            return ImageGenerator._l2_distance((x, y), center) <= figure_size / 2 and (
                 math.isclose(x, center[0], abs_tol=tolerance)
                 or math.isclose(y, center[1], abs_tol=tolerance)
             )
@@ -112,7 +121,7 @@ class ImageGenerator:
         """
         Generates a rectangle
         """
-        tolerance = 1
+        tolerance = 0.7
 
         half_figure_side_lengths = [
             figure_size // 2,
@@ -147,12 +156,12 @@ class ImageGenerator:
         """
         Generates a triangle
         """
-        leg_tolerance = math.sqrt(figure_size * 1.1) * 0.4
-        base_tolerance = math.sqrt(figure_size * 0.5) * 0.3
+        leg_tolerance = 1.3
+        base_tolerance = 0.6
 
         half_figure_side_lengths = [
             figure_size // 2,
-            random.randint(figure_size // 3, figure_size // 2),
+            random.randint(figure_size // 2.5, figure_size // 2),
         ]
 
         def get_slope(point_a, point_b):
@@ -274,7 +283,7 @@ class ImageGenerator:
         return [
             ImageGenerator._generate_random_figure(
                 side_length=side_length,
-                figure_size=random.randint(5, 50),
+                figure_size=random.randint(figure_size_range[0], figure_size_range[1]),
                 centered=centered,
                 noise=noise,
             )
@@ -303,7 +312,7 @@ class ImageGenerator:
                 ImageGenerator._split_image_set(
                     image_set=ImageGenerator._generate_random_figures(
                         side_length=side_length,
-                        figure_size_range=(5, 50),
+                        figure_size_range=figure_size_range,
                         centered=centered,
                         noise=noise,
                         image_set_size=image_set_size,

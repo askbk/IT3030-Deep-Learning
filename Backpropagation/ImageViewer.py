@@ -31,6 +31,13 @@ class ImageViewer:
 if __name__ == "__main__":
     from ImageGenerator import ImageGenerator
 
-    images = ImageGenerator().generate()[0][:10]
-    ImageViewer.display_images([np.random.rand(50, 50) for i in range(10)])
+    image_set = ImageGenerator().generate(
+        image_set_size=10,
+        dataset_split=(1,),
+        centered=False,
+        side_length=16,
+        figure_size_range=(10, 15),
+    )[0]
+    images, labels = list(zip(*image_set))
+    print("".join([f"{label}\n" for label in labels]))
     ImageViewer.display_images(images)
