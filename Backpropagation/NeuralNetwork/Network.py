@@ -182,12 +182,11 @@ class Network:
             trained, training_performance = network._train_minibatch(
                 batch, verbose=verbose
             )
-            validation_performance = self._validate(validation_set)
 
             return (
                 trained,
                 np.array([*acc_training_performance, training_performance]),
-                np.array([*acc_validation_performance, validation_performance]),
+                np.array([*acc_validation_performance, self._validate(validation_set)]),
             )
 
         return train_with_validation
