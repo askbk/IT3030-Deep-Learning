@@ -16,7 +16,7 @@ def run_image_classification():
         "./configs/1network.json"
     ).train(
         train,
-        minibatches=500,
+        minibatches=100,
         validation_set=validate,
     )
     testing_performance = network.test(test)
