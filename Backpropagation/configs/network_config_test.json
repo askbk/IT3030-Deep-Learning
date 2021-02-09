@@ -1,20 +1,14 @@
 {
-    "loss": "mse",
-    "softmax": false,
+    "loss": "cross_entropy",
+    "softmax": true,
     "regularization": {
-        "function": "l2", "rate": 0.01
+        "function": "l2", "rate": 0.0001
     },
-    "learning_rate": 0.1,
-    "input_neurons": 100,
+    "learning_rate": 0.01,
+    "input_neurons": 256,
     "layers": [
         {
-            "neurons": 100,
-            "activation_function": "sigmoid",
-            "use_bias": true,
-            "initial_weight_range": [-0.1, 0.1]
-        },
-        {
-            "neurons": 10,
+            "neurons": 1000,
             "activation_function": "sigmoid",
             "use_bias": true,
             "initial_weight_range": [-0.1, 0.1]

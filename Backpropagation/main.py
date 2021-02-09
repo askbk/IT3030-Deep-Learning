@@ -7,17 +7,19 @@ from PerformanceDisplay import PerformanceDisplay
 
 
 def run_image_classification():
-    train, validate, test = DatasetFactory.new_dataset("./dataset_config.json")
+    train, validate, test = [
+        translate_labels_to_neuron_activation(dataset)
+        for dataset in DatasetFactory.new_dataset("./configs/1dataset.json")
+    ]
 
-    translated_validation = translate_labels_to_neuron_activation(validate)
     network, training_performance, validation_performance = NetworkFactory.new_network(
-        "./network_config.json"
+        "./configs/1network.json"
     ).train(
-        translate_labels_to_neuron_activation(train),
+        train,
         minibatches=500,
-        validation_set=translated_validation,
+        validation_set=validate,
     )
-    testing_performance = network.test(translate_labels_to_neuron_activation(test))
+    testing_performance = network.test(test)
 
     PerformanceDisplay.display_performance(
         training_performance, validation_performance, testing_performance
