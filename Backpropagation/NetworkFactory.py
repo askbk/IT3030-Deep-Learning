@@ -12,7 +12,7 @@ class NetworkFactory:
     """
 
     @staticmethod
-    def _parse_regularization_config(config):
+    def _parse_regularization_config(config: dict):
         if not "regularization" in config:
             return {"regularization": None}
 
@@ -22,7 +22,7 @@ class NetworkFactory:
         }
 
     @staticmethod
-    def _construct_layers(config):
+    def _construct_layers(config: dict):
         def construct_layer(constructed, current_layer_config):
             if len(constructed) == 0:
                 return [
@@ -49,7 +49,10 @@ class NetworkFactory:
         ]
 
     @staticmethod
-    def new_network(config_path):
+    def new_network(config_path: str):
+        """
+        Create a new Network using JSON config file.
+        """
         with open(config_path, "r") as f:
             config_data = f.read()
 
