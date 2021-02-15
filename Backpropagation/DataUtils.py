@@ -5,12 +5,15 @@ from functools import reduce
 
 def randomize_dataset(dataset):
     """
-    Randomises order of dataset
+    Randomizes order of dataset
     """
     return random.sample(dataset, k=len(dataset))
 
 
 def translate_labels_to_neuron_activation(dataset):
+    """
+    Translates class labels to one-hot vectors for classification problems.
+    """
     labels = reduce(lambda labels_set, case: labels_set | {case[1]}, dataset, set())
     neuron_dict = {label: i for i, label in enumerate(labels)}
     neuron_count = len(labels)

@@ -1,6 +1,6 @@
-from ImageGenerator import ImageGenerator
 import pytest
 from itertools import chain
+from ImageGenerator import ImageGenerator
 
 
 def test_generates_correct_number_of_images():

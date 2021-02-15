@@ -3,12 +3,11 @@ from ImageGenerator import ImageGenerator
 
 
 class DatasetFactory:
-    """
-    Creates a dataset from a config file
-    """
-
     @staticmethod
     def new_dataset(config_path):
+        """
+        Creates a dataset from a JSON config file
+        """
         with open(config_path, "r") as f:
             config_data = f.read()
 

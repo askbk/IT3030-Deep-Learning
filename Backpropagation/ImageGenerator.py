@@ -1,10 +1,13 @@
-from itertools import chain
-import random
 import math
+import random
 import numpy as np
-from itertools import product, accumulate, islice
-from typing import Tuple, List
 from functools import reduce
+from itertools import chain, product, accumulate, islice
+from typing import Tuple, List, Callable, Union
+
+Image = List[List[int]]
+FlattenedImage = np.array
+Dataset = List[Tuple[Union[Image, FlattenedImage], str]]
 
 
 class ImageGenerator:
@@ -13,9 +16,11 @@ class ImageGenerator:
     """
 
     @staticmethod
-    def _calculate_figure_center(side_length: int, figure_size: int, centered: bool):
+    def _calculate_figure_center(
+        side_length: int, figure_size: int, centered: bool
+    ) -> Tuple[float, float]:
         """
-        Calculate the center for a figure.
+        Calculate the center coordinates for a figure.
         """
         half = side_length / 2
 
@@ -30,9 +35,9 @@ class ImageGenerator:
         )
 
     @staticmethod
-    def _l2_distance(point_a: Tuple[int], point_b: Tuple[int]):
+    def _l2_distance(point_a: Tuple[int, int], point_b: Tuple[int, int]) -> int:
         """
-        Calculate L2 distance between points in 2D
+        Calculate L2 distance between two points in 2D.
         """
         x1, y1 = point_a
         x2, y2 = point_b
@@ -40,19 +45,9 @@ class ImageGenerator:
         return math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
 
     @staticmethod
-    def _l1_distance(point_a: Tuple[int], point_b: Tuple[int]):
+    def _add_noise(image: Image, noise: float) -> Image:
         """
-        Calculate L1 distance between points in 2D
-        """
-        x1, y1 = point_a
-        x2, y2 = point_b
-
-        return abs(x1 - x2) + abs(y1 - y2)
-
-    @staticmethod
-    def _add_noise(image, noise):
-        """
-        Return the image with added noise
+        Randomly flip pixels to add noise.
         """
         return [
             [pixel if random.random() > noise else 1 - pixel for pixel in row]
@@ -60,26 +55,23 @@ class ImageGenerator:
         ]
 
     @staticmethod
-    def _generate_generic_figure(side_length, figure_function):
+    def _generate_generic_figure(
+        side_length: int, figure_function: Callable[[int, int], bool]
+    ) -> Image:
         """
         Colors a pixel if figure_function(x, y) is true.
         """
-        return list(
-            map(
-                lambda x: list(
-                    map(
-                        lambda y: 1 if figure_function(x, y) else 0,
-                        range(side_length),
-                    )
-                ),
-                range(side_length),
-            ),
-        )
+        return [
+            [int(figure_function(x, y)) for y in range(side_length)]
+            for x in range(side_length)
+        ]
 
     @staticmethod
-    def _generate_circle(side_length: int, figure_size: int, center: Tuple[float]):
+    def _generate_circle(
+        side_length: int, figure_size: int, center: Tuple[float]
+    ) -> Tuple[Image, str]:
         """
-        Generates a circle
+        Generate a circle.
         """
 
         def should_be_colored(x, y):
@@ -97,7 +89,9 @@ class ImageGenerator:
         )
 
     @staticmethod
-    def _generate_cross(side_length: int, figure_size: int, center: Tuple[float]):
+    def _generate_cross(
+        side_length: int, figure_size: int, center: Tuple[float, float]
+    ) -> Tuple[Image, str]:
         """
         Generates a cross
         """
@@ -117,7 +111,9 @@ class ImageGenerator:
         )
 
     @staticmethod
-    def _generate_rectangle(side_length: int, figure_size: int, center: Tuple[float]):
+    def _generate_rectangle(
+        side_length: int, figure_size: int, center: Tuple[float, float]
+    ) -> Tuple[Image, str]:
         """
         Generates a rectangle
         """
@@ -152,7 +148,9 @@ class ImageGenerator:
         )
 
     @staticmethod
-    def _generate_triangle(side_length: int, figure_size: int, center: Tuple[float]):
+    def _generate_triangle(
+        side_length: int, figure_size: int, center: Tuple[float, float]
+    ) -> Tuple[Image, str]:
         """
         Generates a triangle
         """
@@ -210,7 +208,7 @@ class ImageGenerator:
     @staticmethod
     def _generate_random_figure(
         side_length: int, figure_size: int, centered: bool, noise: float
-    ):
+    ) -> Tuple[Image, str]:
         """
         Generates a random figure.
         """
@@ -238,22 +236,24 @@ class ImageGenerator:
         )
 
     @staticmethod
-    def _conditional_flatten(image_set, flatten: bool):
+    def _conditional_flatten(
+        image_set: List[Tuple[Image, str]], flatten: bool
+    ) -> Dataset:
         """
         Flattens the image set if flatten is True.
         """
         if not flatten:
             return image_set
 
-        return list(
-            map(
-                lambda image: (np.array(list(chain.from_iterable(image[0]))), image[1]),
-                image_set,
-            )
-        )
+        return [
+            (np.array(list(chain.from_iterable(image[0]))), image[1])
+            for image in image_set
+        ]
 
     @staticmethod
-    def _split_image_set(image_set: List, image_set_fractions: Tuple[float]):
+    def _split_image_set(
+        image_set: Dataset, image_set_fractions: Tuple[float, ...]
+    ) -> Tuple[Dataset, ...]:
         """
         Splits an image set according to given subset proportions.
         """
@@ -276,7 +276,7 @@ class ImageGenerator:
         centered: bool,
         noise: float,
         image_set_size: int,
-    ):
+    ) -> List[Image]:
         """
         Generates a given number of random images.
         """
@@ -299,26 +299,21 @@ class ImageGenerator:
         flatten=False,
         centered=False,
         noise=0.003,
-    ):
+    ) -> Tuple[Dataset, ...]:
         """
         Generates random images of circles, crosses, rectangles and triangles.
-        Returns on the form ()
         """
         return tuple(
-            map(
-                lambda image_set: ImageGenerator._conditional_flatten(
-                    image_set, flatten
+            ImageGenerator._conditional_flatten(image_set, flatten)
+            for image_set in ImageGenerator._split_image_set(
+                image_set=ImageGenerator._generate_random_figures(
+                    side_length=side_length,
+                    figure_size_range=figure_size_range,
+                    centered=centered,
+                    noise=noise,
+                    image_set_size=image_set_size,
                 ),
-                ImageGenerator._split_image_set(
-                    image_set=ImageGenerator._generate_random_figures(
-                        side_length=side_length,
-                        figure_size_range=figure_size_range,
-                        centered=centered,
-                        noise=noise,
-                        image_set_size=image_set_size,
-                    ),
-                    image_set_fractions=dataset_split,
-                ),
+                image_set_fractions=dataset_split,
             )
         )
 
@@ -326,6 +321,8 @@ class ImageGenerator:
 if __name__ == "__main__":
     from ImageViewer import ImageViewer
 
-    images = ImageGenerator().generate(side_length=50, centered=False)[0]
-
+    dataset, *_ = ImageGenerator().generate(
+        image_set_size=100, side_length=50, centered=False, figure_size_range=(15, 45)
+    )
+    images = [data[0] for data in dataset]
     ImageViewer.display_images(images)
