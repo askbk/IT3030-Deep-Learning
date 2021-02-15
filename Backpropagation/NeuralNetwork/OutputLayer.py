@@ -1,8 +1,9 @@
 import numpy as np
 from NeuralNetwork.Math import Activation
+from NeuralNetwork.LayerBase import LayerBase
 
 
-class OutputLayer:
+class OutputLayer(LayerBase):
     """
     An output layer.
     """

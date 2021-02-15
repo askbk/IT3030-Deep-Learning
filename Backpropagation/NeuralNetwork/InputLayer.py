@@ -1,7 +1,8 @@
 import numpy as np
+from NeuralNetwork.LayerBase import LayerBase
 
 
-class InputLayer:
+class InputLayer(LayerBase):
     """
     Represents an input layer with no weights or biases.
     """

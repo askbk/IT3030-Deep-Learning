@@ -1,10 +1,11 @@
 import numpy as np
 from NeuralNetwork.Math import Activation
+from NeuralNetwork.LayerBase import LayerBase
 
 
-class Layer:
+class DenseLayer(LayerBase):
     """
-    A layer in a neural network.
+    A dense layer in a neural network.
     """
 
     def __init__(
@@ -16,7 +17,7 @@ class Layer:
         weights=None,
         use_bias=True,
     ):
-        self._weights = Layer._initialize_weights(
+        self._weights = DenseLayer._initialize_weights(
             weights, input_neurons, neurons, initial_weight_range, use_bias
         )
 
@@ -113,7 +114,7 @@ class Layer:
         Data is a row-vector representing a single test case.
         """
         if len(data.shape) != 1:
-            raise ValueError("Layer only supports 1-dimensional arrays as input.")
+            raise ValueError("DenseLayer only supports 1-dimensional arrays as input.")
 
         return self._apply_activation_function(
             self._multiply_weights(self._add_bias_neuron_conditionally(data))
@@ -137,7 +138,7 @@ class Layer:
     def update_weights(self, jacobians, learning_rate):
         new_weights = self._weights - learning_rate * np.sum(jacobians, axis=0)
 
-        return Layer(
+        return DenseLayer(
             input_neurons=self._input_neurons,
             neurons=self._neurons,
             activation_function=self._activation_function,

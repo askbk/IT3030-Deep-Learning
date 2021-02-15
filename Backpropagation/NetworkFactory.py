@@ -1,7 +1,7 @@
 import json
 from NeuralNetwork.Network import Network
 from NeuralNetwork.OutputLayer import OutputLayer
-from NeuralNetwork.Layer import Layer
+from NeuralNetwork.DenseLayer import DenseLayer
 from NeuralNetwork.InputLayer import InputLayer
 from functools import reduce
 
@@ -26,12 +26,16 @@ class NetworkFactory:
         def construct_layer(constructed, current_layer_config):
             if len(constructed) == 0:
                 return [
-                    Layer(input_neurons=config["input_neurons"], **current_layer_config)
+                    DenseLayer(
+                        input_neurons=config["input_neurons"], **current_layer_config
+                    )
                 ]
 
             return [
                 *constructed,
-                Layer(input_neurons=constructed[-1]._neurons, **current_layer_config),
+                DenseLayer(
+                    input_neurons=constructed[-1]._neurons, **current_layer_config
+                ),
             ]
 
         hidden_layers = reduce(

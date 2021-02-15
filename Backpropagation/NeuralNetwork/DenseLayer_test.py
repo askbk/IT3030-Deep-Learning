@@ -1,11 +1,11 @@
 import pytest
 import numpy as np
-from NeuralNetwork.Layer import Layer
+from NeuralNetwork.DenseLayer import DenseLayer
 
 
 def test_layer_constructor():
-    Layer(neurons=1, input_neurons=5)
-    Layer(
+    DenseLayer(neurons=1, input_neurons=5)
+    DenseLayer(
         input_neurons=55,
         neurons=5,
         activation_function="sigmoid",
@@ -15,14 +15,14 @@ def test_layer_constructor():
 
 def test_layer_correct_weight_bias_dimensions():
     with pytest.raises(ValueError):
-        Layer(neurons=2, input_neurons=2, weights=np.array([[1, 2], [1, 2]]))
+        DenseLayer(neurons=2, input_neurons=2, weights=np.array([[1, 2], [1, 2]]))
 
     with pytest.raises(ValueError):
-        Layer(neurons=2, input_neurons=2, weights=np.array([[1, 2, 3], [1, 2, 3]]))
+        DenseLayer(neurons=2, input_neurons=2, weights=np.array([[1, 2, 3], [1, 2, 3]]))
 
 
 def test_forward_pass():
-    layer = Layer(neurons=1, input_neurons=2)
+    layer = DenseLayer(neurons=1, input_neurons=2)
     data = np.array([0, 1])
     output = layer.forward_pass(data)
 
@@ -30,7 +30,7 @@ def test_forward_pass():
 
 
 def test_forward_pass_correct_output_base_case():
-    layer = Layer(
+    layer = DenseLayer(
         input_neurons=1,
         neurons=1,
         weights=np.array([[1]]),
@@ -45,7 +45,7 @@ def test_forward_pass_correct_output_base_case():
 
 
 def test_forward_pass_correct_output_multiple_input():
-    layer = Layer(
+    layer = DenseLayer(
         input_neurons=2,
         neurons=1,
         weights=np.array([[0.1], [0.2]]),
@@ -60,7 +60,7 @@ def test_forward_pass_correct_output_multiple_input():
 
 
 def test_forward_pass_correct_output_with_bias():
-    layer = Layer(
+    layer = DenseLayer(
         input_neurons=2,
         neurons=1,
         weights=np.array([[0.1], [0.1], [0.2]]),
@@ -74,7 +74,7 @@ def test_forward_pass_correct_output_with_bias():
 
 
 def test_hyperbolic_tangent_activation():
-    layer = Layer(
+    layer = DenseLayer(
         input_neurons=2,
         neurons=1,
         weights=np.array([[0.1], [0.1], [0.2]]),
@@ -89,7 +89,7 @@ def test_hyperbolic_tangent_activation():
 
 
 def test_relu_activation():
-    layer = Layer(
+    layer = DenseLayer(
         input_neurons=2,
         neurons=1,
         weights=np.array([[0.1], [0.1], [0.2]]),
@@ -103,7 +103,7 @@ def test_relu_activation():
 
 
 def test_linear_activation():
-    layer = Layer(
+    layer = DenseLayer(
         input_neurons=2,
         neurons=1,
         weights=np.array([[0.1], [0.1], [0.2]]),
@@ -123,7 +123,7 @@ def test_backward_pass_updates_weights():
     YW = Y_with_bias @ W
     f = lambda X: 1 / (1 + np.exp(-X))
     Z = f(YW)
-    layer = Layer(
+    layer = DenseLayer(
         input_neurons=2,
         neurons=3,
         weights=W,

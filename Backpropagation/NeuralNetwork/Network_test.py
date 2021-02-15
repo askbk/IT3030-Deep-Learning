@@ -1,6 +1,6 @@
 import numpy as np
 from NeuralNetwork.Network import Network
-from NeuralNetwork.Layer import Layer
+from NeuralNetwork.DenseLayer import DenseLayer
 from NeuralNetwork.InputLayer import InputLayer
 from NeuralNetwork.OutputLayer import OutputLayer
 from NeuralNetwork.Math import Loss
@@ -16,7 +16,7 @@ def test_network_constructor():
 def test_network_forward_pass_base_case():
     network = Network(
         layers=[
-            Layer(
+            DenseLayer(
                 input_neurons=1,
                 neurons=1,
                 activation_function="sigmoid",
@@ -38,14 +38,14 @@ def test_network_forward_pass_base_case():
 def test_network_forward_pass_multiple_layers():
     network = Network(
         layers=[
-            Layer(
+            DenseLayer(
                 input_neurons=1,
                 neurons=3,
                 activation_function="sigmoid",
                 weights=np.array([[0.1, 0.1, 0.1], [0.1, 0.2, -0.1]]),
                 use_bias=True,
             ),
-            Layer(
+            DenseLayer(
                 input_neurons=3,
                 neurons=2,
                 activation_function="sigmoid",
@@ -71,7 +71,7 @@ def test_network_with_input_layer():
     network = Network(
         layers=[
             InputLayer(),
-            Layer(
+            DenseLayer(
                 input_neurons=2,
                 neurons=1,
                 activation_function="sigmoid",
@@ -94,13 +94,13 @@ def test_training_base_case():
     network = Network(
         layers=[
             InputLayer(),
-            Layer(
+            DenseLayer(
                 input_neurons=2,
                 neurons=2,
                 activation_function="sigmoid",
                 use_bias=True,
             ),
-            Layer(
+            DenseLayer(
                 input_neurons=2,
                 neurons=1,
                 activation_function="sigmoid",
@@ -131,13 +131,13 @@ def test_network_test():
     network = Network(
         layers=[
             InputLayer(),
-            Layer(
+            DenseLayer(
                 input_neurons=2,
                 neurons=2,
                 activation_function="sigmoid",
                 use_bias=True,
             ),
-            Layer(
+            DenseLayer(
                 input_neurons=2,
                 neurons=1,
                 activation_function="sigmoid",
