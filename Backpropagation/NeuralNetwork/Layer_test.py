@@ -131,4 +131,4 @@ def test_backward_pass_updates_weights():
         use_bias=True,
     )
 
-    weight_jacobian, prev_layer_jacobian = layer.backward_pass(Z, Z, Y)
+    _weight_jacobian, _prev_layer_jacobian = layer.backward_pass(Z, Z, Y)
