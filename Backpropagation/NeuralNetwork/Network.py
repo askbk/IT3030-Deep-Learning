@@ -1,6 +1,6 @@
-from functools import reduce
-from typing import Tuple
 import numpy as np
+from typing import Tuple
+from functools import reduce
 from NeuralNetwork.Math import Loss
 
 

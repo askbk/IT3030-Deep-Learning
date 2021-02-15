@@ -1,6 +1,6 @@
-from NeuralNetwork.Layer import Layer
-import numpy as np
 import pytest
+import numpy as np
+from NeuralNetwork.Layer import Layer
 
 
 def test_layer_constructor():
