@@ -1,6 +1,6 @@
-from matplotlib import pyplot as plt
-from itertools import chain
 import numpy as np
+from itertools import chain
+from matplotlib import pyplot as plt
 
 
 class ImageViewer:
@@ -19,6 +19,9 @@ class ImageViewer:
 
     @staticmethod
     def display_images(images):
+        """
+        Displays 10 images.
+        """
         _fig, axs = plt.subplots(2, 5, figsize=(10, 10))
         for ax, image in zip(chain.from_iterable(axs), images):
             ax.imshow(image)
@@ -39,5 +42,4 @@ if __name__ == "__main__":
         figure_size_range=(10, 15),
     )[0]
     images, labels = list(zip(*image_set))
-    print("".join([f"{label}\n" for label in labels]))
     ImageViewer.display_images(images)
