@@ -122,7 +122,7 @@ class Network:
         layer_outputs = self._cached_forward_pass(np.array(x, dtype=np.float64))
         if verbose:
             print(
-                f"Input: {x}\tOutput: {layer_outputs[-1]}\tTrue: {y}\tLoss: {self._apply_loss_function(y, layer_outputs[-1])}"
+                f"Input: {x}\tOutput: {layer_outputs[-1]}\tTarget: {y}\tLoss: {self._apply_loss_function(y, layer_outputs[-1])}"
             )
         loss_jacobian = np.array(
             [

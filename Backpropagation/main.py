@@ -14,11 +14,7 @@ def run_image_classification():
 
     network, training_performance, validation_performance = NetworkFactory.new_network(
         "./configs/1network.json"
-    ).train(
-        train,
-        minibatches=100,
-        validation_set=validate,
-    )
+    ).train(train, minibatches=100, validation_set=validate)
     testing_performance = network.test(test)
 
     PerformanceDisplay.display_performance(
