@@ -2,38 +2,38 @@
     "loss": "cross_entropy",
     "softmax": true,
     "regularization": {
-        "function": "l1", "rate": 0.0001
+        "function": "l2", "rate": 0.00001
     },
-    "learning_rate": 0.01,
+    "learning_rate": 0.001,
     "input_neurons": 225,
     "layers": [
         {
-            "neurons": 225,
-            "activation_function": "relu",
-            "use_bias": true,
-            "initial_weight_range": [-0.1, 0.1]
-        },
-        {
             "neurons": 100,
-            "activation_function": "relu",
+            "activation_function": "tanh",
             "use_bias": true,
             "initial_weight_range": [-0.1, 0.1]
         },
         {
-            "neurons": 50,
-            "activation_function": "relu",
+            "neurons": 30,
+            "activation_function": "tanh",
             "use_bias": true,
             "initial_weight_range": [-0.1, 0.1]
         },
         {
-            "neurons": 24,
-            "activation_function": "relu",
+            "neurons": 20,
+            "activation_function": "tanh",
             "use_bias": true,
             "initial_weight_range": [-0.1, 0.1]
         },
         {
-            "neurons": 12,
-            "activation_function": "relu",
+            "neurons": 10,
+            "activation_function": "tanh",
+            "use_bias": true,
+            "initial_weight_range": [-0.1, 0.1]
+        },
+        {
+            "neurons": 8,
+            "activation_function": "swish",
             "use_bias": true,
             "initial_weight_range": [-0.1, 0.1]
         },
