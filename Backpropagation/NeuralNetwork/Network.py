@@ -176,7 +176,8 @@ class Network:
 
         return Network._update_layers(self, updated_layers), np.mean(case_loss)
 
-    def _train_with_validation(self, validation_set, verbose=False):
+    @staticmethod
+    def _train_with_validation(validation_set, verbose=False):
         def train_with_validation(acc: Tuple[Network, np.array, np.array], batch):
             network, acc_training_performance, acc_validation_performance = acc
             trained, training_performance = network._train_minibatch(
@@ -186,12 +187,15 @@ class Network:
             return (
                 trained,
                 np.array([*acc_training_performance, training_performance]),
-                np.array([*acc_validation_performance, self._validate(validation_set)]),
+                np.array(
+                    [*acc_validation_performance, trained._validate(validation_set)]
+                ),
             )
 
         return train_with_validation
 
-    def _train_without_validation(self, verbose=False):
+    @staticmethod
+    def _train_without_validation(verbose=False):
         def train_without_validation(acc: Tuple[Network, np.array], batch):
             network, acc_training_performance, *_ = acc
             trained, training_performance = network._train_minibatch(
@@ -201,18 +205,19 @@ class Network:
 
         return train_without_validation
 
-    def _train(self, validation_set, verbose=False):
+    @staticmethod
+    def _train(validation_set, verbose=False):
         if validation_set is None:
-            return self._train_without_validation(verbose=verbose)
+            return Network._train_without_validation(verbose=verbose)
 
-        return self._train_with_validation(validation_set, verbose=verbose)
+        return Network._train_with_validation(validation_set, verbose=verbose)
 
     def train(self, training_set, minibatches, validation_set=None, verbose=False):
         """
         Returns a new instance of the Network that is trained with X and Y.
         """
         return reduce(
-            self._train(validation_set, verbose=verbose),
+            Network._train(validation_set, verbose=verbose),
             Network._split_data_into_minibatches(training_set, minibatches),
             (self, np.array([]), np.array([])),
         )
