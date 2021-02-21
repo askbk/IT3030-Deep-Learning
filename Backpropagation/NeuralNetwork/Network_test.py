@@ -1,8 +1,6 @@
 import numpy as np
-from NeuralNetwork.Network import Network
-from NeuralNetwork.DenseLayer import DenseLayer
-from NeuralNetwork.InputLayer import InputLayer
-from NeuralNetwork.OutputLayer import OutputLayer
+from NeuralNetwork import Network
+from NeuralNetwork.Layers import DenseLayer, InputLayer, OutputLayer
 from NeuralNetwork.Math import Loss
 from DataUtils import randomize_dataset
 

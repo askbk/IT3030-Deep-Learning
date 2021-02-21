@@ -1,5 +1,5 @@
 import numpy as np
-from NeuralNetwork.OutputLayer import OutputLayer
+from NeuralNetwork.Layers import OutputLayer
 
 
 def test_returns_input_without_softmax():

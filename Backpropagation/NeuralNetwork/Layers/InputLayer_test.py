@@ -1,5 +1,5 @@
 import numpy as np
-from NeuralNetwork.InputLayer import InputLayer
+from NeuralNetwork.Layers import InputLayer
 
 
 def test_forward_pass_returns_input_with_intercept():

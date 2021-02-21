@@ -1,6 +1,6 @@
 import numpy as np
 from NeuralNetwork.Math import Activation
-from NeuralNetwork.LayerBase import LayerBase
+from NeuralNetwork.Layers import LayerBase
 
 
 class DenseLayer(LayerBase):

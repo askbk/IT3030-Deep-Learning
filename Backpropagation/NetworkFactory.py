@@ -1,8 +1,6 @@
 import json
-from NeuralNetwork.Network import Network
-from NeuralNetwork.OutputLayer import OutputLayer
-from NeuralNetwork.DenseLayer import DenseLayer
-from NeuralNetwork.InputLayer import InputLayer
+from NeuralNetwork import Network
+from NeuralNetwork.Layers import OutputLayer, DenseLayer, InputLayer
 from functools import reduce
 
 

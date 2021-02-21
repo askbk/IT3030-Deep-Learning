@@ -1,5 +1,5 @@
 import numpy as np
-from NeuralNetwork.LayerBase import LayerBase
+from NeuralNetwork.Layers import LayerBase
 
 
 class InputLayer(LayerBase):

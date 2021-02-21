@@ -1,6 +1,6 @@
 import pytest
 import numpy as np
-from NeuralNetwork.DenseLayer import DenseLayer
+from NeuralNetwork.Layers import DenseLayer
 
 
 def test_layer_constructor():
