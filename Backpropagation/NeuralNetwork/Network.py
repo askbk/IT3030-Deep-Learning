@@ -91,12 +91,17 @@ class Network:
             f"Regularization function {self._regularization} not implemented."
         )
 
-    def _apply_loss_function(self, Y, Y_hat):
+    def _apply_loss_function(self, Y, Y_hat, penalty=True):
         if self._loss_function == "mse":
-            return Loss.mean_squared_error(Y, Y_hat) + self._apply_penalty_function()
+            return (
+                Loss.mean_squared_error(Y, Y_hat)
+                + self._apply_penalty_function() * penalty
+            )
 
         if self._loss_function == "cross_entropy":
-            return Loss.cross_entropy(Y, Y_hat) + self._apply_penalty_function()
+            return (
+                Loss.cross_entropy(Y, Y_hat) + self._apply_penalty_function() * penalty
+            )
 
         raise NotImplementedError(
             f"Loss function {self._loss_function} not implemented."
@@ -227,5 +232,8 @@ class Network:
         Returns average performance on test set
         """
         return np.mean(
-            [self._apply_loss_function(y, self.forward_pass(x)) for x, y in test_set]
+            [
+                self._apply_loss_function(y, self.forward_pass(x), penalty=False)
+                for x, y in test_set
+            ]
         )
