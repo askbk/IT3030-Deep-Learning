@@ -13,7 +13,7 @@ def test_1d_forward_pass():
     correct_output = np.array([4, 13, 4, 6, 3, 3])
     output = layer.forward_pass(data)
 
-    assert not np.all(np.isclose(output, correct_output))
+    assert np.all(np.isclose(output, correct_output))
 
 
 def test_2d_forward_pass():
@@ -23,4 +23,4 @@ def test_2d_forward_pass():
     correct_output = np.array([[-1, 2, 0], [7, 2, -2], [-2, 5, 4]])
     output = layer.forward_pass(data)
 
-    assert not np.all(np.isclose(output, correct_output))
+    assert np.all(np.isclose(output, correct_output))
