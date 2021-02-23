@@ -11,16 +11,8 @@ class Activation:
         return expit(X)
 
     @staticmethod
-    def sigmoid_derivative(X):
-        return Activation.sigmoid(X) * (1 - Activation.sigmoid(X))
-
-    @staticmethod
-    def swish(X):
-        return X * Activation.sigmoid(X)
-
-    @staticmethod
-    def swish_derivative(X):
-        return Activation.swish(X) + Activation.sigmoid(X) * (1 - Activation.swish(X))
+    def sigmoid_derivative(Y):
+        return Y * (1.0 - Y)
 
     @staticmethod
     def tanh(X):
@@ -30,11 +22,11 @@ class Activation:
         return np.tanh(X)
 
     @staticmethod
-    def tanh_derivative(X):
+    def tanh_derivative(Y):
         """
         Hyperbolic tangent
         """
-        return 1 - Activation.tanh(X) ** 2
+        return 1 - Y ** 2
 
     @staticmethod
     def linear(X):
@@ -44,8 +36,8 @@ class Activation:
         return X
 
     @staticmethod
-    def linear_derivative(X):
-        return np.ones_like(X)
+    def linear_derivative(Y):
+        return np.ones_like(Y)
 
     @staticmethod
     def relu(X):
@@ -55,8 +47,8 @@ class Activation:
         return np.maximum(X, 0)
 
     @staticmethod
-    def relu_derivative(X):
-        return np.where(X <= 0, 0, 1)
+    def relu_derivative(Y):
+        return np.where(Y <= 0, 0, 1)
 
     @staticmethod
     def softmax(X):
@@ -66,9 +58,10 @@ class Activation:
         return softmax(X, axis=0)
 
     @staticmethod
-    def softmax_derivative(X):
-        X_reshape = X.reshape((-1, 1))
-        return np.diagflat(X) - np.dot(X_reshape, X_reshape.T)
+    def softmax_derivative(S):
+        S_vector = S.reshape(S.shape[0], 1)
+        S_matrix = np.tile(S_vector, S.shape[0])
+        return np.diag(S) - (S_matrix * np.transpose(S_matrix))
 
 
 class Loss:

@@ -33,7 +33,7 @@
         },
         {
             "neurons": 8,
-            "activation_function": "swish",
+            "activation_function": "relu",
             "use_bias": true,
             "initial_weight_range": [-0.1, 0.1]
         },

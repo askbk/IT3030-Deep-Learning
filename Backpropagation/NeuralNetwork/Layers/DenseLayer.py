@@ -21,7 +21,7 @@ class DenseLayer(LayerBase):
             weights, input_neurons, neurons, initial_weight_range, use_bias
         )
 
-        if activation_function not in ("sigmoid", "tanh", "relu", "linear", "swish"):
+        if activation_function not in ("sigmoid", "tanh", "relu", "linear"):
             raise ValueError("Invalid activation function.")
         self._use_bias = use_bias
         self._neurons = neurons
@@ -69,9 +69,6 @@ class DenseLayer(LayerBase):
         if self._activation_function == "linear":
             return Activation.linear(data)
 
-        if self._activation_function == "swish":
-            return Activation.swish(data)
-
         raise NotImplementedError(
             f"Activation function {self._activation_function} not implemented."
         )
@@ -91,9 +88,6 @@ class DenseLayer(LayerBase):
 
         if self._activation_function == "linear":
             return Activation.linear_derivative(data)
-
-        if self._activation_function == "swish":
-            return Activation.swish_derivative(data)
 
         raise NotImplementedError(
             f"Activation function {self._activation_function} not implemented."
@@ -128,7 +122,6 @@ class DenseLayer(LayerBase):
         J_Z_Sum = np.diag(Diag_J_Z_Sum)
         # Don't include bias node in Jacobian passed upstream
         J_Z_Y = np.dot(J_Z_Sum, self._get_weights_excluding_bias().T)
-        # J_hat_Z_W = np.outer(Diag_J_Z_Sum, self._add_bias_neuron_conditionally(Y))
         J_hat_Z_W = np.outer(self._add_bias_neuron_conditionally(Y), Diag_J_Z_Sum)
         J_L_W = J_L_Z * J_hat_Z_W
         J_L_Y = np.dot(J_L_Z, J_Z_Y)
