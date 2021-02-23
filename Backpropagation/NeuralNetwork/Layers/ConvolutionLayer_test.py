@@ -36,7 +36,12 @@ def test_multichannel_2d_forward_pass():
     )
     layer = ConvolutionLayer(_kernels=kernels, mode="valid")
     correct_output = np.array(
-        [[[-1, 2, 0], [7, 2, -2], [-2, 5, 4]], [[2, 0, 4], [4, 3, 3], [1, 3, 5]]]
+        [
+            [[-1, 2, 0], [7, 2, -2], [-2, 5, 4]],
+            [[-1, 4, -1], [-3, 1, 7], [5, -2, 1]],
+            [[4, 1, 3], [1, 6, 7], [7, 6, 3]],
+            [[2, 0, 4], [4, 3, 3], [1, 3, 5]],
+        ]
     )
     output = layer.forward_pass(data)
     assert np.all(np.isclose(output, correct_output))

@@ -1,4 +1,5 @@
 import numpy as np
+from itertools import product
 from scipy.signal import convolve, correlate
 from NeuralNetwork.Layers import LayerBase
 
@@ -13,6 +14,6 @@ class ConvolutionLayer(LayerBase):
         return np.array(
             [
                 correlate(channel, kernel, mode=self._mode)
-                for channel, kernel in zip(data, self._kernels)
+                for kernel, channel in product(self._kernels, data)
             ]
         )
