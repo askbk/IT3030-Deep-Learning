@@ -62,3 +62,14 @@ def test_multichannel_2d_forward_pass():
     output = layer.forward_pass(data)
 
     assert np.all(np.isclose(output, correct_output))
+
+
+def test_1d_backward_pass():
+    kernels = np.array([[[1, 1, -1]]])
+    data = np.array([[[0, 0, 1, 1, 1, 1, 0, 0, 0]]])
+    layer = ConvolutionLayer(_kernels=kernels, mode="valid", stride=1)
+    forward_output = layer.forward_pass(data)
+    assert np.all(np.isclose(forward_output, np.array([-1, 0, 1, 1, 2, 1, 0])))
+
+    J_L_Z = np.array([[[0.1, 0, 0.1, 0.1, -0.2, 0.1, 0]]])
+    backward_output = layer.backward_pass(J_L_Z, forward_output, data)

@@ -1,7 +1,9 @@
 import math
 import numpy as np
+from more_itertools import intersperse
 from itertools import product
 from scipy.signal import convolve, correlate
+from scipy.ndimage import grey_dilation
 from NeuralNetwork.Layers import LayerBase
 
 
@@ -51,6 +53,34 @@ class ConvolutionLayer(LayerBase):
             )
 
         raise ValueError("Mode must be either 'same', 'valid' or 'full'.")
+
+    @staticmethod
+    def _dilate_array(array, dilation_factor):
+        interspersed_elements = [
+            intersperse(0, row, n=dilation_factor) for row in array
+        ]
+        return intersperse(
+            np.zeros(interspersed_elements.shape[1]),
+            interspersed_elements,
+            n=dilation_factor,
+        )
+
+    @staticmethod
+    def _pad_2d_array(array, padding_x, padding_y):
+        return np.pad(array, ((padding_x, padding_x), (padding_y, padding_y)))
+
+    def backward_pass(self, J_L_Z, Z, Y):
+        padding_x, padding_y = ConvolutionLayer._get_padding(
+            self._mode, self._stride, self._kernels.shape[-2:]
+        )
+        dilated_output = ConvolutionLayer._dilate_array(
+            ConvolutionLayer._pad_2d_array(Z, padding_x, padding_y),
+            dilation_factor=self._stride - 1,
+        )
+        J_L_W = correlate(dilated_output, Y, mode=self._mode)
+        J_L_Y = None
+
+        return J_L_W, J_L_Y
 
     def forward_pass(self, data):
         channels, rows, columns = data.shape
