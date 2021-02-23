@@ -182,13 +182,13 @@ class Network:
         return Network._update_layers(self, updated_layers), np.mean(case_loss)
 
     @staticmethod
-    def _train_with_validation(validation_set, verbose=False):
+    def _train_with_validation(validation_set, minibatch_count, verbose=False):
         def train_with_validation(acc: Tuple[Network, np.array, np.array], batch):
             network, acc_training_performance, acc_validation_performance = acc
             trained, training_performance = network._train_minibatch(
                 batch, verbose=verbose
             )
-
+            print(f"Minibatch {len(acc_training_performance)+1}/{minibatch_count}")
             return (
                 trained,
                 np.array([*acc_training_performance, training_performance]),
@@ -200,9 +200,10 @@ class Network:
         return train_with_validation
 
     @staticmethod
-    def _train_without_validation(verbose=False):
+    def _train_without_validation(minibatch_count, verbose=False):
         def train_without_validation(acc: Tuple[Network, np.array], batch):
             network, acc_training_performance, *_ = acc
+            print(f"Minibatch {len(acc_training_performance)+1}/{minibatch_count}")
             trained, training_performance = network._train_minibatch(
                 batch, verbose=verbose
             )
@@ -211,18 +212,24 @@ class Network:
         return train_without_validation
 
     @staticmethod
-    def _train(validation_set, verbose=False):
+    def _train(validation_set, minibatch_count, verbose=False):
         if validation_set is None:
-            return Network._train_without_validation(verbose=verbose)
+            return Network._train_without_validation(
+                minibatch_count=minibatch_count, verbose=verbose
+            )
 
-        return Network._train_with_validation(validation_set, verbose=verbose)
+        return Network._train_with_validation(
+            validation_set, minibatch_count=minibatch_count, verbose=verbose
+        )
 
     def train(self, training_set, minibatches, validation_set=None, verbose=False):
         """
         Returns a new instance of the Network that is trained with X and Y.
         """
         return reduce(
-            Network._train(validation_set, verbose=verbose),
+            Network._train(
+                validation_set, verbose=verbose, minibatch_count=minibatches
+            ),
             Network._split_data_into_minibatches(training_set, minibatches),
             (self, np.array([]), np.array([])),
         )
