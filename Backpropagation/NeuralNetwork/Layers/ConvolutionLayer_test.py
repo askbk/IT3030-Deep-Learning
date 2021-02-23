@@ -7,20 +7,36 @@ def test_conv_layer_constructor():
 
 
 def test_1d_forward_pass():
-    kernel = np.array([1, 2, -1])
-    data = np.array([1, 4, 5, 1, 3, 1, 2, 2])
-    layer = ConvolutionLayer(_kernel=kernel, mode="valid")
-    correct_output = np.array([4, 13, 4, 6, 3, 3])
+    kernel = np.array([[1, 2, -1]])
+    data = np.array([[1, 4, 5, 1, 3, 1, 2, 2]])
+    layer = ConvolutionLayer(_kernels=kernel, mode="valid")
+    correct_output = np.array([[4, 13, 4, 6, 3, 3]])
     output = layer.forward_pass(data)
 
     assert np.all(np.isclose(output, correct_output))
 
 
 def test_2d_forward_pass():
-    kernel = np.array([[1, 0], [-1, 1]])
-    data = np.array([[1, 1, 0, 1], [3, 1, 2, 2], [0, 4, 5, 1], [3, 1, 2, 1]])
-    layer = ConvolutionLayer(_kernel=kernel, mode="valid")
-    correct_output = np.array([[-1, 2, 0], [7, 2, -2], [-2, 5, 4]])
+    kernel = np.array([[[1, 0], [-1, 1]]])
+    data = np.array([[[1, 1, 0, 1], [3, 1, 2, 2], [0, 4, 5, 1], [3, 1, 2, 1]]])
+    layer = ConvolutionLayer(_kernels=kernel, mode="valid")
+    correct_output = np.array([[[-1, 2, 0], [7, 2, -2], [-2, 5, 4]]])
     output = layer.forward_pass(data)
 
+    assert np.all(np.isclose(output, correct_output))
+
+
+def test_multichannel_2d_forward_pass():
+    kernels = np.array([[[1, 0], [-1, 1]], [[0, 1], [1, 0]]])
+    data = np.array(
+        [
+            [[1, 1, 0, 1], [3, 1, 2, 2], [0, 4, 5, 1], [3, 1, 2, 1]],
+            [[0, 1, 0, 1], [1, 0, 3, 2], [4, 0, 1, 5], [1, 2, 0, 0]],
+        ]
+    )
+    layer = ConvolutionLayer(_kernels=kernels, mode="valid")
+    correct_output = np.array(
+        [[[-1, 2, 0], [7, 2, -2], [-2, 5, 4]], [[2, 0, 4], [4, 3, 3], [1, 3, 5]]]
+    )
+    output = layer.forward_pass(data)
     assert np.all(np.isclose(output, correct_output))

@@ -1,13 +1,18 @@
 import numpy as np
-from scipy.signal import convolve
+from scipy.signal import convolve, correlate
 from NeuralNetwork.Layers import LayerBase
 
 
 class ConvolutionLayer(LayerBase):
-    def __init__(self, mode="valid", _kernel=None):
+    def __init__(self, mode="valid", _kernels=None):
         self._mode = mode
-        if _kernel is not None:
-            self._kernel = _kernel
+        if _kernels is not None:
+            self._kernels = _kernels
 
     def forward_pass(self, data):
-        return convolve(self._kernel, data, mode=self._mode)
+        return np.array(
+            [
+                correlate(channel, kernel, mode=self._mode)
+                for channel, kernel in zip(data, self._kernels)
+            ]
+        )

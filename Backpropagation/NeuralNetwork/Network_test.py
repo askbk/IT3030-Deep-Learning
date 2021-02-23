@@ -1,6 +1,6 @@
 import numpy as np
 from NeuralNetwork import Network
-from NeuralNetwork.Layers import DenseLayer, InputLayer, OutputLayer
+from NeuralNetwork.Layers import DenseLayer, InputLayer, OutputLayer, ConvolutionLayer
 from NeuralNetwork.Math import Loss
 from DataUtils import randomize_dataset
 
@@ -85,6 +85,20 @@ def test_network_with_input_layer():
     actual = [network.forward_pass(case) for case in cases]
     expected = np.array([[0.5], [0.549834], [0.450166]])
 
+    assert np.all(np.isclose(actual, expected))
+
+
+def test_network_with_conv_layer():
+    kernel = np.array([[[1, 0], [-1, 1]]])
+    network = Network(
+        layers=[InputLayer(), ConvolutionLayer(_kernels=kernel, mode="valid")],
+        loss_function="mse",
+        regularization=None,
+    )
+
+    data = np.array([[[1, 1, 0, 1], [3, 1, 2, 2], [0, 4, 5, 1], [3, 1, 2, 1]]])
+    actual = network.forward_pass(data)
+    expected = np.array([[[-1, 2, 0], [7, 2, -2], [-2, 5, 4]]])
     assert np.all(np.isclose(actual, expected))
 
 
