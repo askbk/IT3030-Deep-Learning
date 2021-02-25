@@ -13,7 +13,7 @@ class InputLayer(LayerBase):
         """
         return data
 
-    def backward_pass(self, J_L_Z, Z, Y):
+    def backward_pass(self, J_L_Y, Y, X):
         """
         Returns a tuple of the weight Jacobian and the Jacobian to pass upstream.
         """

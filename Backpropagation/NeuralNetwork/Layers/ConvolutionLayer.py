@@ -110,10 +110,10 @@ class ConvolutionLayer(LayerBase):
                         ] = np.einsum("ij, ij", kernel, padded_channel_slice)
         return output
 
-    def backward_pass(self, J_L_Z, Z, Y):
+    def backward_pass(self, J_L_Y, Y, X):
         padding_x, padding_y = self._kernels.shape[-2] - 1, self._kernels.shape[-1] - 1
         dilated_output = ConvolutionLayer._dilate_array(
-            Z,
+            Y,
             dilation_factor=self._stride - 1,
         )
 
@@ -121,13 +121,13 @@ class ConvolutionLayer(LayerBase):
             dilated_output, padding_x, padding_y
         )
 
-        J_L_W = ConvolutionLayer._correlate(Y, dilated_output, mode=self._mode)
+        J_L_W = ConvolutionLayer._correlate(X, dilated_output, mode=self._mode)
         flipped_kernel = np.fliplr(np.flipud(self._kernels))
-        J_L_Y = ConvolutionLayer._correlate(
+        J_L_X = ConvolutionLayer._correlate(
             padded_dilated_output, flipped_kernel, mode=self._mode
         )
 
-        return J_L_W, J_L_Y
+        return J_L_W, J_L_X
 
     def forward_pass(self, data):
         return ConvolutionLayer._correlate(

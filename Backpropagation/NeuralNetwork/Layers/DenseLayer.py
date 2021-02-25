@@ -114,19 +114,19 @@ class DenseLayer(LayerBase):
             self._multiply_weights(self._add_bias_neuron_conditionally(data))
         )
 
-    def backward_pass(self, J_L_Z, Z, Y):
+    def backward_pass(self, J_L_Y, Y, X):
         """
         Returns a tuple of the weight Jacobian and the Jacobian to pass upstream.
         """
-        Diag_J_Z_Sum = self._apply_activation_function_derivative(Z)
-        J_Z_Sum = np.diag(Diag_J_Z_Sum)
+        Diag_J_Y_Sum = self._apply_activation_function_derivative(Y)
+        J_Y_Sum = np.diag(Diag_J_Y_Sum)
         # Don't include bias node in Jacobian passed upstream
-        J_Z_Y = np.dot(J_Z_Sum, self._get_weights_excluding_bias().T)
-        J_hat_Z_W = np.outer(self._add_bias_neuron_conditionally(Y), Diag_J_Z_Sum)
-        J_L_W = J_L_Z * J_hat_Z_W
-        J_L_Y = np.dot(J_L_Z, J_Z_Y)
+        J_Y_X = np.dot(J_Y_Sum, self._get_weights_excluding_bias().T)
+        J_hat_Y_W = np.outer(self._add_bias_neuron_conditionally(X), Diag_J_Y_Sum)
+        J_L_W = J_L_Y * J_hat_Y_W
+        J_L_X = np.dot(J_L_Y, J_Y_X)
 
-        return J_L_W, J_L_Y
+        return J_L_W, J_L_X
 
     def update_weights(self, jacobians, learning_rate):
         new_weights = self._weights - learning_rate * np.sum(jacobians, axis=0)
