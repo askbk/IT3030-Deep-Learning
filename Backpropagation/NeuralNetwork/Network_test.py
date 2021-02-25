@@ -90,15 +90,43 @@ def test_network_with_input_layer():
 
 def test_network_with_conv_layer():
     kernel = np.array([[[1, 0], [-1, 1]]])
+    weights = np.array(
+        [
+            [
+                [[0.5, 0.9], [0.0, 0.7], [0.3, 0.9]],
+                [
+                    [0.2, 0.6],
+                    [0.6, 0.2],
+                    [0.3, 0.0],
+                ],
+                [
+                    [0.6, 0.9],
+                    [0.3, 0.5],
+                    [0.7, 0.7],
+                ],
+            ]
+        ]
+    )
     network = Network(
-        layers=[InputLayer(), ConvolutionLayer(_kernels=kernel, mode="valid")],
+        layers=[
+            InputLayer(),
+            ConvolutionLayer(_kernels=kernel, mode="valid"),
+            DenseLayer(
+                (1, 3, 3),
+                neurons=2,
+                activation_function="linear",
+                weights=weights,
+                use_bias=False,
+            ),
+        ],
         loss_function="mse",
         regularization=None,
     )
 
     data = np.array([[[1, 1, 0, 1], [3, 1, 2, 2], [0, 4, 5, 1], [3, 1, 2, 1]]])
     actual = network.forward_pass(data)
-    expected = np.array([[[-1, 2, 0], [7, 2, -2], [-2, 5, 4]]])
+    _conv_result = np.array([[[-1, 2, 0], [7, 2, -2], [-2, 5, 4]]])
+    expected = np.array([4.6, 8.6])
     assert np.all(np.isclose(actual, expected))
 
 

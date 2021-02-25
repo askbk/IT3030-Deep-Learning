@@ -32,26 +32,33 @@ class DenseLayer(LayerBase):
     def _initialize_weights(
         weights, input_neurons, neurons, initial_weight_range, use_bias
     ):
-        expected_shape = (input_neurons + 1 if use_bias else input_neurons, neurons)
+        if isinstance(input_neurons, int):
+            expected_shape = (input_neurons + 1 if use_bias else input_neurons, neurons)
+
+            if weights is not None:
+                if weights.shape != expected_shape:
+                    raise ValueError(
+                        f"Weight matrix must have shape ({expected_shape}), was {weights.shape}"
+                    )
+                return weights
+
+            if initial_weight_range is not None:
+                return np.random.uniform(
+                    low=initial_weight_range[0],
+                    high=initial_weight_range[1],
+                    size=expected_shape,
+                )
+
+            return np.random.random_sample(expected_shape)
 
         if weights is not None:
-            if weights.shape != expected_shape:
-                raise ValueError(
-                    f"Weight matrix must have shape ({expected_shape}), was {weights.shape}"
-                )
             return weights
 
-        if initial_weight_range is not None:
-            return np.random.uniform(
-                low=initial_weight_range[0],
-                high=initial_weight_range[1],
-                size=expected_shape,
-            )
-
-        return np.random.random_sample(expected_shape)
+        return np.random.random_sample(input_neurons + (neurons,))
 
     def _multiply_weights(self, X: np.array):
         return X @ self._weights
+        # return np.einsum("i,ij->j", X, self._weights)
 
     def _apply_activation_function(self, data):
         """
@@ -108,7 +115,9 @@ class DenseLayer(LayerBase):
         Data is a row-vector representing a single test case.
         """
         if len(data.shape) != 1:
-            raise ValueError("DenseLayer only supports 1-dimensional arrays as input.")
+            return self._apply_activation_function(
+                np.einsum("ijk,ijkl->l", data, self._weights)
+            )
 
         return self._apply_activation_function(
             self._multiply_weights(self._add_bias_neuron_conditionally(data))
