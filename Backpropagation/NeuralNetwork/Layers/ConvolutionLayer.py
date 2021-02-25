@@ -69,6 +69,44 @@ class ConvolutionLayer(LayerBase):
     def _pad_2d_array(array, padding_x, padding_y):
         return np.pad(array, ((padding_x, padding_x), (padding_y, padding_y)))
 
+    @staticmethod
+    def _convolve(data, kernels, mode="valid", stride=1, true_convolution=False):
+        """
+        docstring
+        """
+        channels, rows, columns = data.shape
+        kernel_size = kernels.shape[-2:]
+        out_channels = channels * len(kernels)
+        output = np.empty(
+            (out_channels,)
+            + ConvolutionLayer._get_output_dimensions(
+                mode, stride, kernel_size, (rows, columns)
+            )
+        )
+        padding_x, padding_y = ConvolutionLayer._get_padding(mode, stride, kernel_size)
+        max_row_index = rows + 2 * padding_x - kernel_size[0] + 1
+        max_col_index = columns + 2 * padding_y - kernel_size[1] + 1
+        for kernel_index, kernel in enumerate(kernels):
+            for channel_index, channel in enumerate(data):
+                output_channel_index = len(kernels) * kernel_index + channel_index
+                padded_channel = np.pad(
+                    channel, ((padding_x, padding_x), (padding_y, padding_y))
+                )
+                for out_row_index, input_row_index in enumerate(
+                    range(0, max_row_index, stride)
+                ):
+                    for out_col_index, input_col_index in enumerate(
+                        range(0, max_col_index, stride)
+                    ):
+                        padded_channel_slice = padded_channel[
+                            input_row_index : input_row_index + kernel_size[0],
+                            input_col_index : input_col_index + kernel_size[1],
+                        ]
+                        output[output_channel_index][out_row_index][
+                            out_col_index
+                        ] = np.einsum("ij, ij", kernel, padded_channel_slice)
+        return output
+
     def backward_pass(self, J_L_Z, Z, Y):
         padding_x, padding_y = ConvolutionLayer._get_padding(
             self._mode, self._stride, self._kernels.shape[-2:]
@@ -83,38 +121,6 @@ class ConvolutionLayer(LayerBase):
         return J_L_W, J_L_Y
 
     def forward_pass(self, data):
-        channels, rows, columns = data.shape
-        kernel_size = self._kernels.shape[-2:]
-        out_channels = channels * len(self._kernels)
-        output = np.empty(
-            (out_channels,)
-            + ConvolutionLayer._get_output_dimensions(
-                self._mode, self._stride, kernel_size, (rows, columns)
-            )
+        return ConvolutionLayer._convolve(
+            data, self._kernels, mode=self._mode, stride=self._stride
         )
-        padding_x, padding_y = ConvolutionLayer._get_padding(
-            self._mode, self._stride, kernel_size
-        )
-        max_row_index = rows + 2 * padding_x - kernel_size[0] + 1
-        max_col_index = columns + 2 * padding_y - kernel_size[1] + 1
-        for kernel_index, kernel in enumerate(self._kernels):
-            for channel_index, channel in enumerate(data):
-                output_channel_index = len(self._kernels) * kernel_index + channel_index
-                padded_channel = np.pad(
-                    channel, ((padding_x, padding_x), (padding_y, padding_y))
-                )
-                for out_row_index, input_row_index in enumerate(
-                    range(0, max_row_index, self._stride)
-                ):
-                    for out_col_index, input_col_index in enumerate(
-                        range(0, max_col_index, self._stride)
-                    ):
-                        padded_channel_slice = padded_channel[
-                            input_row_index : input_row_index + kernel_size[0],
-                            input_col_index : input_col_index + kernel_size[1],
-                        ]
-                        output[output_channel_index][out_row_index][
-                            out_col_index
-                        ] = np.einsum("ij, ij", kernel, padded_channel_slice)
-
-        return output
