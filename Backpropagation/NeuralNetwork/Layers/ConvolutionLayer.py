@@ -56,6 +56,8 @@ class ConvolutionLayer(LayerBase):
 
     @staticmethod
     def _dilate_array(array, dilation_factor):
+        if dilation_factor == 0:
+            return array
         interspersed_elements = [
             intersperse(0, row, n=dilation_factor) for row in array
         ]
@@ -66,14 +68,15 @@ class ConvolutionLayer(LayerBase):
         )
 
     @staticmethod
+    def _pad_3d_array(array, padding_x, padding_y):
+        return np.pad(array, ((0, 0), (padding_x, padding_x), (padding_y, padding_y)))
+
+    @staticmethod
     def _pad_2d_array(array, padding_x, padding_y):
         return np.pad(array, ((padding_x, padding_x), (padding_y, padding_y)))
 
     @staticmethod
-    def _convolve(data, kernels, mode="valid", stride=1, true_convolution=False):
-        """
-        docstring
-        """
+    def _correlate(data, kernels, mode="valid", stride=1):
         channels, rows, columns = data.shape
         kernel_size = kernels.shape[-2:]
         out_channels = channels * len(kernels)
@@ -89,8 +92,8 @@ class ConvolutionLayer(LayerBase):
         for kernel_index, kernel in enumerate(kernels):
             for channel_index, channel in enumerate(data):
                 output_channel_index = len(kernels) * kernel_index + channel_index
-                padded_channel = np.pad(
-                    channel, ((padding_x, padding_x), (padding_y, padding_y))
+                padded_channel = ConvolutionLayer._pad_2d_array(
+                    channel, padding_x, padding_y
                 )
                 for out_row_index, input_row_index in enumerate(
                     range(0, max_row_index, stride)
@@ -108,19 +111,25 @@ class ConvolutionLayer(LayerBase):
         return output
 
     def backward_pass(self, J_L_Z, Z, Y):
-        padding_x, padding_y = ConvolutionLayer._get_padding(
-            self._mode, self._stride, self._kernels.shape[-2:]
-        )
+        padding_x, padding_y = self._kernels.shape[-2] - 1, self._kernels.shape[-1] - 1
         dilated_output = ConvolutionLayer._dilate_array(
-            ConvolutionLayer._pad_2d_array(Z, padding_x, padding_y),
+            Z,
             dilation_factor=self._stride - 1,
         )
-        J_L_W = correlate(dilated_output, Y, mode=self._mode)
-        J_L_Y = None
+
+        padded_dilated_output = ConvolutionLayer._pad_3d_array(
+            dilated_output, padding_x, padding_y
+        )
+
+        J_L_W = ConvolutionLayer._correlate(Y, dilated_output, mode=self._mode)
+        flipped_kernel = np.fliplr(np.flipud(self._kernels))
+        J_L_Y = ConvolutionLayer._correlate(
+            padded_dilated_output, flipped_kernel, mode=self._mode
+        )
 
         return J_L_W, J_L_Y
 
     def forward_pass(self, data):
-        return ConvolutionLayer._convolve(
+        return ConvolutionLayer._correlate(
             data, self._kernels, mode=self._mode, stride=self._stride
         )
