@@ -136,7 +136,6 @@ class DenseLayer(LayerBase):
                 "l,ijkl->ijk", Diag_J_Y_Sum, self._get_weights_excluding_bias().T
             )
             J_L_X = np.einsum("li,ijk->jk", J_L_Y, J_Y_X)  # works
-            print("Diag_J_Y_Sum:", Diag_J_Y_Sum)
             J_Y_W = np.einsum("i,ijk->ijk", Diag_J_Y_Sum, X)  # doesn't work
             J_L_W = np.einsum("xl,ijk->ijkl", J_L_Y, J_Y_W)
         else:
@@ -145,7 +144,6 @@ class DenseLayer(LayerBase):
             J_L_X = np.dot(J_L_Y, J_Y_X)
             J_L_W = J_L_Y * J_hat_Y_W
 
-        print("\nDense JW:", J_L_W)
         return J_L_W, J_L_X
 
     def update_weights(self, jacobians, learning_rate):

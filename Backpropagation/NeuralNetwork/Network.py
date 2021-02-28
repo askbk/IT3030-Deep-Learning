@@ -142,7 +142,6 @@ class Network:
             weight_jacobian, pass_down = self._layers[index].backward_pass(
                 downstream_jacobian, layer_outputs[index], layer_outputs[index - 1]
             )
-            # print(f"\nlayer {index}\n", "JW:", weight_jacobian, "\nJX:", pass_down)
             weight_jacobians.append(weight_jacobian)
             downstream_jacobian = pass_down
 
