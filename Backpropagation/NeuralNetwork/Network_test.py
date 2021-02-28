@@ -140,7 +140,7 @@ def test_multiple_conv_layers():
             ConvolutionLayer(mode="same", kernel_shape=(4, 4, 4), stride=1),
             ConvolutionLayer(mode="valid", kernel_shape=(4, 3, 3), stride=2),
             DenseLayer(
-                (36, 7, 10),
+                (48, 7, 10),
                 neurons=4,
                 activation_function="linear",
                 use_bias=False,
@@ -152,7 +152,7 @@ def test_multiple_conv_layers():
     )
     rng = np.random.default_rng()
     data = rng.random((3, 15, 21))
-    expected = rng.random((1, 2))
+    expected = rng.random((4,))
 
     network.train([(data, expected)], minibatches=1)
 
