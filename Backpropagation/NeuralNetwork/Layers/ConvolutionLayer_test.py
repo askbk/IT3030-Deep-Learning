@@ -3,7 +3,7 @@ from NeuralNetwork.Layers import ConvolutionLayer
 
 
 def test_conv_layer_constructor():
-    ConvolutionLayer()
+    ConvolutionLayer(kernel_shape=(1, 1, 2))
 
 
 def test_1d_forward_pass():

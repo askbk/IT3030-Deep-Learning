@@ -8,15 +8,34 @@ from NeuralNetwork.Layers import LayerBase
 
 
 class ConvolutionLayer(LayerBase):
-    def __init__(self, mode="valid", stride=1, _kernels=None):
+    def __init__(
+        self,
+        kernel_shape=None,
+        mode="valid",
+        stride=1,
+        initial_weight_range=(-0.1, 0.1),
+        _kernels=None,
+    ):
         if mode == "same" and stride > 1:
             raise ValueError(
                 "Convolution mode 'same' and stride > 1 does not make sense."
             )
         self._mode = mode
         self._stride = stride
+        self._kernels = ConvolutionLayer._initialize_kernels(
+            kernel_shape, _kernels, initial_weight_range
+        )
         if _kernels is not None:
             self._kernels = _kernels
+
+    @staticmethod
+    def _initialize_kernels(kernel_shape, kernels, initial_weight_range):
+        if kernels is not None:
+            return kernels
+
+        return np.random.default_rng().uniform(
+            low=initial_weight_range[0], high=initial_weight_range[1], size=kernel_shape
+        )
 
     @staticmethod
     def _get_padding(mode, stride, kernel_size):
@@ -55,6 +74,13 @@ class ConvolutionLayer(LayerBase):
         raise ValueError("Mode must be either 'same', 'valid' or 'full'.")
 
     @staticmethod
+    def _get_max_input_index(mode, kernel_size, data_size, padding):
+        if mode == "full":
+            return data_size + 2 * padding - kernel_size + 1
+
+        return data_size + padding - kernel_size + 1
+
+    @staticmethod
     def _dilate_array(array, dilation_factor):
         if dilation_factor == 0:
             return array
@@ -87,11 +113,15 @@ class ConvolutionLayer(LayerBase):
             )
         )
         padding_x, padding_y = ConvolutionLayer._get_padding(mode, stride, kernel_size)
-        max_row_index = rows + 2 * padding_x - kernel_size[0] + 1
-        max_col_index = columns + 2 * padding_y - kernel_size[1] + 1
+        max_row_index = ConvolutionLayer._get_max_input_index(
+            mode, kernel_size[0], rows, padding_x
+        )
+        max_col_index = ConvolutionLayer._get_max_input_index(
+            mode, kernel_size[1], columns, padding_y
+        )
         for kernel_index, kernel in enumerate(kernels):
             for channel_index, channel in enumerate(data):
-                output_channel_index = len(kernels) * kernel_index + channel_index
+                output_channel_index = channels * kernel_index + channel_index
                 padded_channel = ConvolutionLayer._pad_2d_array(
                     channel, padding_x, padding_y
                 )
@@ -109,6 +139,16 @@ class ConvolutionLayer(LayerBase):
                             out_col_index
                         ] = np.einsum("ij, ij", kernel, padded_channel_slice)
         return output
+
+    def get_weights(self):
+        return self._kernels
+
+    def update_weights(self, jacobians, learning_rate):
+        return ConvolutionLayer(
+            mode=self._mode,
+            stride=self._stride,
+            _kernels=self._kernels - learning_rate * np.sum(jacobians, axis=0),
+        )
 
     def backward_pass(self, J_L_Y, Y, X):
         padding_x, padding_y = self._kernels.shape[-2] - 1, self._kernels.shape[-1] - 1

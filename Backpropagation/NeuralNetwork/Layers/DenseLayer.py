@@ -1,4 +1,5 @@
 import numpy as np
+from functools import reduce
 from NeuralNetwork.Math import Activation
 from NeuralNetwork.Layers import LayerBase
 
@@ -129,16 +130,27 @@ class DenseLayer(LayerBase):
         """
         Diag_J_Y_Sum = self._apply_activation_function_derivative(Y)
         J_Y_Sum = np.diag(Diag_J_Y_Sum)
-        # Don't include bias node in Jacobian passed upstream
-        J_Y_X = np.dot(J_Y_Sum, self._get_weights_excluding_bias().T)
         J_hat_Y_W = np.outer(self._add_bias_neuron_conditionally(X), Diag_J_Y_Sum)
-        J_L_W = J_L_Y * J_hat_Y_W
-        J_L_X = np.dot(J_L_Y, J_Y_X)
+        if len(X.shape) != 1:
+            J_Y_X = np.einsum(
+                "l,ijkl->ijk", Diag_J_Y_Sum, self._get_weights_excluding_bias().T
+            )
+            J_L_X = np.einsum("li,ijk->jk", J_L_Y, J_Y_X)  # works
+            print("Diag_J_Y_Sum:", Diag_J_Y_Sum)
+            J_Y_W = np.einsum("i,ijk->ijk", Diag_J_Y_Sum, X)  # doesn't work
+            J_L_W = np.einsum("xl,ijk->ijkl", J_L_Y, J_Y_W)
+        else:
+            # J_L_X = J_L_Y * J_Y_Sum * W
+            J_Y_X = np.dot(J_Y_Sum, self._get_weights_excluding_bias().T)
+            J_L_X = np.dot(J_L_Y, J_Y_X)
+            J_L_W = J_L_Y * J_hat_Y_W
 
+        print("\nDense JW:", J_L_W)
         return J_L_W, J_L_X
 
     def update_weights(self, jacobians, learning_rate):
-        new_weights = self._weights - learning_rate * np.sum(jacobians, axis=0)
+        jacobian_sum = reduce(np.add, jacobians)
+        new_weights = self._weights - learning_rate * jacobian_sum
 
         return DenseLayer(
             input_neurons=self._input_neurons,

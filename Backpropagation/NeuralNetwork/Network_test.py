@@ -127,7 +127,34 @@ def test_network_with_conv_layer():
     actual = network.forward_pass(data)
     _conv_result = np.array([[[-1, 2, 0], [7, 2, -2], [-2, 5, 4]]])
     expected = np.array([4.6, 8.6])
+
     assert np.all(np.isclose(actual, expected))
+
+    network.train([(data, expected)], minibatches=1)
+
+
+def test_multiple_conv_layers():
+    network = Network(
+        layers=[
+            InputLayer(),
+            ConvolutionLayer(mode="same", kernel_shape=(4, 4, 4), stride=1),
+            ConvolutionLayer(mode="valid", kernel_shape=(4, 3, 3), stride=2),
+            DenseLayer(
+                (36, 7, 10),
+                neurons=4,
+                activation_function="linear",
+                use_bias=False,
+            ),
+            OutputLayer(4, softmax=True),
+        ],
+        loss_function="cross_entropy",
+        regularization=None,
+    )
+    rng = np.random.default_rng()
+    data = rng.random((3, 15, 21))
+    expected = rng.random((1, 2))
+
+    network.train([(data, expected)], minibatches=1)
 
 
 def test_training_base_case():
