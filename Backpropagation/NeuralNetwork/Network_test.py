@@ -107,6 +107,7 @@ def test_network_with_conv_layer():
             ]
         ]
     )
+    assert weights.shape == (1, 3, 3, 2)
     network = Network(
         layers=[
             InputLayer(),
@@ -150,6 +151,9 @@ def test_multiple_conv_layers():
         loss_function="cross_entropy",
         regularization=None,
     )
+
+    assert network._layers[-2]._weights.shape == (48, 7, 10, 4)
+
     rng = np.random.default_rng()
     data = rng.random((3, 15, 21))
     expected = rng.random((4,))

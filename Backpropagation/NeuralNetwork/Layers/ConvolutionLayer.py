@@ -81,17 +81,35 @@ class ConvolutionLayer(LayerBase):
         return data_size + padding - kernel_size + 1
 
     @staticmethod
-    def _dilate_array(array, dilation_factor):
+    def _dilate_output(array, dilation_factor):
         if dilation_factor == 0:
             return array
-        interspersed_elements = [
-            intersperse(0, row, n=dilation_factor) for row in array
-        ]
-        return intersperse(
-            np.zeros(interspersed_elements.shape[1]),
-            interspersed_elements,
-            n=dilation_factor,
-        )
+
+        def dilate_channel(channel):
+            interspersed_elements = np.array(
+                [list(intersperse(0, row, n=dilation_factor)) for row in channel]
+            )
+
+            return list(
+                intersperse(
+                    np.zeros(interspersed_elements.shape[-1]),
+                    interspersed_elements,
+                    n=dilation_factor,
+                )
+            )
+
+        return np.array([dilate_channel(channel) for channel in array])
+
+        # interspersed_elements = np.array(
+        #     [intersperse(0, row, n=dilation_factor) for row in array]
+        # )
+        # return np.array(
+        #     intersperse(
+        #         np.zeros(interspersed_elements.shape[-1]),
+        #         interspersed_elements,
+        #         n=dilation_factor,
+        #     )
+        # )
 
     @staticmethod
     def _pad_3d_array(array, padding_x, padding_y):
@@ -150,9 +168,20 @@ class ConvolutionLayer(LayerBase):
             _kernels=self._kernels - learning_rate * np.sum(jacobians, axis=0),
         )
 
+    @staticmethod
+    def _sum_over_channel_intervals(array, target_channel_count):
+        channel_count = array.shape[0]
+        channel_interval = channel_count // target_channel_count
+        return np.array(
+            [
+                np.sum(array[start : start + channel_interval], axis=0)
+                for start in range(target_channel_count)
+            ]
+        )
+
     def backward_pass(self, J_L_Y, Y, X):
         padding_x, padding_y = self._kernels.shape[-2] - 1, self._kernels.shape[-1] - 1
-        dilated_output = ConvolutionLayer._dilate_array(
+        dilated_output = ConvolutionLayer._dilate_output(
             Y,
             dilation_factor=self._stride - 1,
         )
@@ -160,12 +189,24 @@ class ConvolutionLayer(LayerBase):
         padded_dilated_output = ConvolutionLayer._pad_3d_array(
             dilated_output, padding_x, padding_y
         )
+        print(dilated_output.shape, X.shape)
 
-        J_L_W = ConvolutionLayer._correlate(X, dilated_output, mode=self._mode)
-        flipped_kernel = np.fliplr(np.flipud(self._kernels))
-        J_L_X = ConvolutionLayer._correlate(
-            padded_dilated_output, flipped_kernel, mode=self._mode
+        J_L_W = ConvolutionLayer._sum_over_channel_intervals(
+            ConvolutionLayer._correlate(X, dilated_output, mode=self._mode),
+            self._kernels.shape[0],
         )
+        flipped_kernel = np.fliplr(np.flipud(self._kernels))
+        J_L_X = ConvolutionLayer._sum_over_channel_intervals(
+            ConvolutionLayer._correlate(
+                padded_dilated_output, flipped_kernel, mode=self._mode
+            ),
+            X.shape[0],
+        )
+        print(J_L_W.shape, self._kernels.shape, J_L_W.shape == self._kernels.shape)
+        assert J_L_W.shape == self._kernels.shape
+        # print(J_L_X.shape, padded_dilated_output.shape, flipped_kernel.shape)
+        # print("goal shape:", X.shape)
+        assert J_L_X.shape == X.shape
 
         return J_L_W, J_L_X
 

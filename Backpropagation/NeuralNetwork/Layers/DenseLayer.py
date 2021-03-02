@@ -129,17 +129,28 @@ class DenseLayer(LayerBase):
         Returns a tuple of the weight Jacobian and the Jacobian to pass upstream.
         """
         Diag_J_Y_Sum = self._apply_activation_function_derivative(Y)
-        J_Y_Sum = np.diag(Diag_J_Y_Sum)
-        J_hat_Y_W = np.outer(self._add_bias_neuron_conditionally(X), Diag_J_Y_Sum)
         if len(X.shape) != 1:
+            last_shapes = self._get_weights_excluding_bias().T.shape[1:]
+            expanded_J_Y_Sum = np.array([np.full(last_shapes, v) for v in Diag_J_Y_Sum])
             J_Y_X = np.einsum(
-                "l,ijkl->ijk", Diag_J_Y_Sum, self._get_weights_excluding_bias().T
+                "ijkl,lkji->lkji",
+                expanded_J_Y_Sum,
+                self._get_weights_excluding_bias(),
             )
-            J_L_X = np.einsum("li,ijk->jk", J_L_Y, J_Y_X)  # works
-            J_Y_W = np.einsum("i,ijk->ijk", Diag_J_Y_Sum, X)  # doesn't work
-            J_L_W = np.einsum("xl,ijk->ijkl", J_L_Y, J_Y_W)
+            # J_L_X = np.tensordot(J_L_Y[0], J_Y_X.T, axes=([0], [0])).T
+            J_L_X = np.einsum("al,ijkl->ijk", J_L_Y, J_Y_X)
+            J_Y_W = np.einsum("l,ijk->ijkl", Diag_J_Y_Sum, X)
+            # J_L_W = np.einsum("l,ijkl->ijk", J_L_Y[0], J_Y_W)
+            # print(J_L_Y.shape, J_Y_W.shape)
+            J_L_W = J_L_Y * J_Y_W
+            # print(J_L_W.shape)
+            assert J_L_W.shape == self._get_weights_excluding_bias().shape
+            # print(J_L_X.shape, X.shape)
+            assert J_L_X.shape == X.shape
         else:
             # J_L_X = J_L_Y * J_Y_Sum * W
+            J_Y_Sum = np.diag(Diag_J_Y_Sum)
+            J_hat_Y_W = np.outer(self._add_bias_neuron_conditionally(X), Diag_J_Y_Sum)
             J_Y_X = np.dot(J_Y_Sum, self._get_weights_excluding_bias().T)
             J_L_X = np.dot(J_L_Y, J_Y_X)
             J_L_W = J_L_Y * J_hat_Y_W
@@ -147,6 +158,7 @@ class DenseLayer(LayerBase):
         return J_L_W, J_L_X
 
     def update_weights(self, jacobians, learning_rate):
+        print(jacobians)
         jacobian_sum = reduce(np.add, jacobians)
         new_weights = self._weights - learning_rate * jacobian_sum
 
