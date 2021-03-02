@@ -59,7 +59,6 @@ class DenseLayer(LayerBase):
 
     def _multiply_weights(self, X: np.array):
         return X @ self._weights
-        # return np.einsum("i,ij->j", X, self._weights)
 
     def _apply_activation_function(self, data):
         """
@@ -141,11 +140,8 @@ class DenseLayer(LayerBase):
             J_L_X = np.einsum("al,ijkl->ijk", J_L_Y, J_Y_X)
             J_Y_W = np.einsum("l,ijk->ijkl", Diag_J_Y_Sum, X)
             # J_L_W = np.einsum("l,ijkl->ijk", J_L_Y[0], J_Y_W)
-            # print(J_L_Y.shape, J_Y_W.shape)
             J_L_W = J_L_Y * J_Y_W
-            # print(J_L_W.shape)
             assert J_L_W.shape == self._get_weights_excluding_bias().shape
-            # print(J_L_X.shape, X.shape)
             assert J_L_X.shape == X.shape
         else:
             # J_L_X = J_L_Y * J_Y_Sum * W
@@ -158,7 +154,6 @@ class DenseLayer(LayerBase):
         return J_L_W, J_L_X
 
     def update_weights(self, jacobians, learning_rate):
-        print(jacobians)
         jacobian_sum = reduce(np.add, jacobians)
         new_weights = self._weights - learning_rate * jacobian_sum
 
@@ -172,3 +167,6 @@ class DenseLayer(LayerBase):
 
     def get_weights(self):
         return self._weights
+
+    def __repr__(self):
+        return f"DenseLayer<neurons={self._neurons}, activation={self._activation_function}, use_bias={self._use_bias}>"

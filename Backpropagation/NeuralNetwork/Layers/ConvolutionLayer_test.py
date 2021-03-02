@@ -75,6 +75,21 @@ def test_1d_backward_pass():
     _backward_output = layer.backward_pass(J_L_Z, forward_output, data)
 
 
+def test_1d_backward_pass_modes():
+    kernels = np.array([[[1, 1, -1]]])
+    X = np.array([[[0, 0, 1, 1, 1, 1, 0, 0, 0]]])
+
+    layer1 = ConvolutionLayer(_kernels=kernels, mode="full", stride=1)
+    Y1 = layer1.forward_pass(X)
+    J_L_Y1 = np.array([[[0.1, 0, 0.1, 0.1, -0.2, 0.1, 0, 0.1, 0.2, 0.3, 0.1]]])
+    layer1.backward_pass(J_L_Y1, Y1, X)
+
+    layer2 = ConvolutionLayer(_kernels=kernels, mode="same", stride=1)
+    Y2 = layer2.forward_pass(X)
+    J_L_Y2 = np.array([[[0.1, 0, 0.1, 0.1, -0.2, 0.1, 0, 0.1, 0.2]]])
+    layer2.backward_pass(J_L_Y2, Y2, X)
+
+
 def test_2d_backward_pass():
     kernels = np.array([[[1, 1, -1], [0, 1, 0]]])
     data = np.array(

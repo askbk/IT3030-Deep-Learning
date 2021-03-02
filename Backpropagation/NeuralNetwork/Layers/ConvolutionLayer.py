@@ -100,17 +100,6 @@ class ConvolutionLayer(LayerBase):
 
         return np.array([dilate_channel(channel) for channel in array])
 
-        # interspersed_elements = np.array(
-        #     [intersperse(0, row, n=dilation_factor) for row in array]
-        # )
-        # return np.array(
-        #     intersperse(
-        #         np.zeros(interspersed_elements.shape[-1]),
-        #         interspersed_elements,
-        #         n=dilation_factor,
-        #     )
-        # )
-
     @staticmethod
     def _pad_3d_array(array, padding_x, padding_y):
         return np.pad(array, ((0, 0), (padding_x, padding_x), (padding_y, padding_y)))
@@ -189,10 +178,11 @@ class ConvolutionLayer(LayerBase):
         padded_dilated_output = ConvolutionLayer._pad_3d_array(
             dilated_output, padding_x, padding_y
         )
-        print(dilated_output.shape, X.shape)
-
+        print(X.shape, dilated_output.shape)
+        temp = ConvolutionLayer._correlate(X, dilated_output, mode=self._mode)
+        print(temp.shape, self._kernels.shape)
         J_L_W = ConvolutionLayer._sum_over_channel_intervals(
-            ConvolutionLayer._correlate(X, dilated_output, mode=self._mode),
+            temp,
             self._kernels.shape[0],
         )
         flipped_kernel = np.fliplr(np.flipud(self._kernels))
@@ -202,7 +192,7 @@ class ConvolutionLayer(LayerBase):
             ),
             X.shape[0],
         )
-        print(J_L_W.shape, self._kernels.shape, J_L_W.shape == self._kernels.shape)
+        # print(J_L_W.shape, self._kernels.shape, J_L_W.shape == self._kernels.shape)
         assert J_L_W.shape == self._kernels.shape
         # print(J_L_X.shape, padded_dilated_output.shape, flipped_kernel.shape)
         # print("goal shape:", X.shape)
@@ -214,3 +204,6 @@ class ConvolutionLayer(LayerBase):
         return ConvolutionLayer._correlate(
             data, self._kernels, mode=self._mode, stride=self._stride
         )
+
+    def __repr__(self):
+        return f"ConvolutionLayer<kernel_shape={self._kernels.shape}, mode={self._mode}, stride={self._stride}>"
