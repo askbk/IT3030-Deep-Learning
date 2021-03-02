@@ -9,11 +9,24 @@ def test_conv_layer_constructor():
 def test_1d_forward_pass():
     kernel = np.array([[[1, 2, -1]]])
     data = np.array([[[1, 4, 5, 1, 3, 1, 2, 2]]])
-    layer = ConvolutionLayer(_kernels=kernel, mode="valid")
-    correct_output = np.array([[[4, 13, 4, 6, 3, 3]]])
-    output = layer.forward_pass(data)
 
-    assert np.all(np.isclose(output, correct_output))
+    layer1 = ConvolutionLayer(_kernels=kernel, mode="valid")
+    correct_output1 = np.array([[[4, 13, 4, 6, 3, 3]]])
+    output1 = layer1.forward_pass(data)
+
+    assert np.all(np.isclose(output1, correct_output1))
+
+    layer2 = ConvolutionLayer(_kernels=kernel, mode="same")
+    correct_output2 = np.array([[[-2, 4, 13, 4, 6, 3, 3, 6]]])
+    output2 = layer2.forward_pass(data)
+
+    assert np.all(np.isclose(output2, correct_output2))
+
+    layer3 = ConvolutionLayer(_kernels=kernel, mode="full")
+    correct_output3 = np.array([[[-1, -2, 4, 13, 4, 6, 3, 3, 6, 2]]])
+    output3 = layer3.forward_pass(data)
+
+    assert np.all(np.isclose(output3, correct_output3))
 
 
 def test_1d_forward_pass_stride_2():
