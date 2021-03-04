@@ -89,32 +89,46 @@ def test_1d_backward_pass():
     _backward_output = layer.backward_pass(J_L_Z, forward_output, data)
 
 
-def test_1d_backward_pass_full_mode():
-    kernels = np.array([[[1, 1, -1]]])
-    X = np.array([[[0, 0, 1, 1, 1, 1, 0, 0, 0]]])
+# def test_1d_backward_pass_full_mode():
+#     # kernels = np.array([[[1, 1, -1]]])
+#     # X = np.array([[[0, 0, 1, 1, 1, 1, 0, 0, 0]]])
 
-    layer1 = ConvolutionLayer(_kernels=kernels, mode="full", stride=1)
-    Y1 = layer1.forward_pass(X)
-    J_L_Y1 = np.array([[[0.1, 0, 0.1, 0.1, -0.2, 0.1, 0, 0.1, 0.2, 0.3, 0.1]]])
-    layer1.backward_pass(J_L_Y1, Y1, X)
+#     # layer1 = ConvolutionLayer(_kernels=kernels, mode="full", stride=1)
+#     # Y1 = layer1.forward_pass(X)
+#     # J_L_Y1 = np.array([[[0.1, 0, 0.1, 0.1, -0.2, 0.1, 0, 0.1, 0.2, 0.3, 0.1]]])
+#     # layer1.backward_pass(J_L_Y1, Y1, X)
 
-    for kernel_size, X_size, stride in product(range(1, 6), range(4, 10), range(1, 4)):
-        kernels = np.arange(kernel_size).reshape((1, 1, kernel_size))
-        X = np.arange(X_size).reshape((1, 1, X_size))
-        layer = ConvolutionLayer(_kernels=kernels, mode="full", stride=stride)
-        Y = layer.forward_pass(X)
-        JLY = np.ones_like(Y)
-        layer.backward_pass(JLY, Y, X)
+#     for kernel_size, X_size, stride in product(range(1, 6), range(4, 10), range(1, 4)):
+#         kernels = np.arange(kernel_size).reshape((1, 1, kernel_size))
+#         X = np.arange(X_size).reshape((1, 1, X_size))
+#         layer = ConvolutionLayer(_kernels=kernels, mode="full", stride=stride)
+#         Y = layer.forward_pass(X)
+#         JLY = np.ones_like(Y)
+#         layer.backward_pass(JLY, Y, X)
 
 
-def test_1d_backward_pass_same_mode():
-    for kernel_size, X_size in product(range(1, 6), range(4, 10)):
-        kernels = np.arange(kernel_size).reshape((1, 1, kernel_size))
-        X = np.arange(X_size).reshape((1, 1, X_size))
-        layer = ConvolutionLayer(_kernels=kernels, mode="same", stride=1)
-        Y = layer.forward_pass(X)
-        JLY = np.ones_like(Y)
-        layer.backward_pass(JLY, Y, X)
+# def test_1d_backward_pass_same_mode():
+#     for kernel_size, X_size in product(range(1, 6), range(4, 10)):
+#         kernels = np.arange(kernel_size).reshape((1, 1, kernel_size))
+#         X = np.arange(X_size).reshape((1, 1, X_size))
+#         layer = ConvolutionLayer(_kernels=kernels, mode="same", stride=1)
+#         Y = layer.forward_pass(X)
+#         JLY = np.ones_like(Y)
+#         layer.backward_pass(JLY, Y, X)
+
+
+def test_backward_pass_channel_ordering():
+    kernels = np.array([[[1, 1]], [[0, 0]]])
+    X = np.array([[[0, 0, 0]], [[1, 1, 1]]])
+    Y = np.array([[[0, 0]], [[2, 2]], [[0, 0]], [[0, 0]]])
+    JLY = np.array([[[0, 0]], [[1, 1]], [[0.5, 0.5]], [[0, 0]]])
+    JLX_expected = np.array([[[0, 0, 0]], [[0.5, 1, 0.5]]])
+    JLW_expected = np.array([[[2, 2]], [[0, 0]]])
+    layer = ConvolutionLayer(_kernels=kernels, mode="valid", stride=1)
+    JLW_actual, JLX_actual = layer.backward_pass(JLY, Y, X)
+    assert np.all(np.isclose(layer.forward_pass(X), Y))
+    assert np.all(np.isclose(JLX_actual, JLX_expected))
+    assert np.all(np.isclose(JLW_actual, JLW_expected))
 
 
 def test_2d_backward_pass():
