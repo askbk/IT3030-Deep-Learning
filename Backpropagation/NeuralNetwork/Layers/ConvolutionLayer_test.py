@@ -1,4 +1,5 @@
 import numpy as np
+from itertools import product
 from NeuralNetwork.Layers import ConvolutionLayer
 
 
@@ -88,7 +89,7 @@ def test_1d_backward_pass():
     _backward_output = layer.backward_pass(J_L_Z, forward_output, data)
 
 
-def test_1d_backward_pass_modes():
+def test_1d_backward_pass_full_mode():
     kernels = np.array([[[1, 1, -1]]])
     X = np.array([[[0, 0, 1, 1, 1, 1, 0, 0, 0]]])
 
@@ -97,10 +98,23 @@ def test_1d_backward_pass_modes():
     J_L_Y1 = np.array([[[0.1, 0, 0.1, 0.1, -0.2, 0.1, 0, 0.1, 0.2, 0.3, 0.1]]])
     layer1.backward_pass(J_L_Y1, Y1, X)
 
-    layer2 = ConvolutionLayer(_kernels=kernels, mode="same", stride=1)
-    Y2 = layer2.forward_pass(X)
-    J_L_Y2 = np.array([[[0.1, 0, 0.1, 0.1, -0.2, 0.1, 0, 0.1, 0.2]]])
-    layer2.backward_pass(J_L_Y2, Y2, X)
+    for kernel_size, X_size, stride in product(range(1, 6), range(4, 10), range(1, 4)):
+        kernels = np.arange(kernel_size).reshape((1, 1, kernel_size))
+        X = np.arange(X_size).reshape((1, 1, X_size))
+        layer = ConvolutionLayer(_kernels=kernels, mode="full", stride=stride)
+        Y = layer.forward_pass(X)
+        JLY = np.ones_like(Y)
+        layer.backward_pass(JLY, Y, X)
+
+
+def test_1d_backward_pass_same_mode():
+    for kernel_size, X_size in product(range(1, 6), range(4, 10)):
+        kernels = np.arange(kernel_size).reshape((1, 1, kernel_size))
+        X = np.arange(X_size).reshape((1, 1, X_size))
+        layer = ConvolutionLayer(_kernels=kernels, mode="same", stride=1)
+        Y = layer.forward_pass(X)
+        JLY = np.ones_like(Y)
+        layer.backward_pass(JLY, Y, X)
 
 
 def test_2d_backward_pass():
