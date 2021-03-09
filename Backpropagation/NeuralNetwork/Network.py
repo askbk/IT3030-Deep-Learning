@@ -243,7 +243,9 @@ class Network:
             x, y = case
             if (100 * index / len(test_set)) % 10 == 0:
                 print(f"{100*index/len(test_set)}% progress")
-            return self._apply_loss_function(y, self.forward_pass(x), penalty=False)
+            return self._apply_loss_function(
+                y, self.forward_pass(np.array(x)), penalty=False
+            )
 
         return np.mean(
             [handle_case(index, case) for index, case in enumerate(test_set)]
