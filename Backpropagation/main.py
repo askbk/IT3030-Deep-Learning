@@ -25,11 +25,11 @@ def run_image_classification_dense():
 def run_image_classification_convolution():
     train, validate, test = [
         translate_labels_to_neuron_activation(dataset)
-        for dataset in DatasetFactory.new_dataset("./configs/5dataset.json")
+        for dataset in DatasetFactory.new_dataset("./configs/4dataset.json")
     ]
 
     network, training_performance, validation_performance = NetworkFactory.new_network(
-        "./configs/5network.json"
+        "./configs/4network.json"
     ).train(train, 100, validate)
     testing_performance = network.test(test, verbose=False)
 

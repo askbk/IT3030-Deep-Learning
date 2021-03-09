@@ -2,22 +2,22 @@
     "loss": "cross_entropy",
     "softmax": true,
     "regularization": {
-        "function": "l2", "rate": 0.0001
+        "function": "l1", "rate": 0.0001
     },
     "learning_rate": 0.1,
-    "input_neurons": [1, 1, 225],
+    "input_neurons": [1, 12, 12],
     "layers": [
         {
             "type": "convolution",
             "mode": "valid",
             "stride": 1,
-            "kernel_shape": [2, 1, 10],
+            "kernel_shape": [4, 4, 4],
             "activation_function": "relu",
             "initial_weight_range": [-0.1, 0.1]
         },
         {
             "type": "convolution",
-            "kernel_shape": [2, 1, 10],
+            "kernel_shape": [2, 3, 3],
             "activation_function": "relu",
             "initial_weight_range": [-0.1, 0.1]
         },
