@@ -228,6 +228,21 @@ class ConvolutionLayer(LayerBase):
 
         raise NotImplementedError(f"{self._activation_function} not implemented")
 
+    def _apply_activation_function_derivative(self, Y):
+        if self._activation_function == "relu":
+            return Activation.relu_derivative(Y)
+
+        if self._activation_function == "linear":
+            return Activation.linear_derivative(Y)
+
+        if self._activation_function == "sigmoid":
+            return Activation.sigmoid_derivative(Y)
+
+        if self._activation_function == "tanh":
+            return Activation.tanh_derivative(Y)
+
+        raise NotImplementedError(f"{self._activation_function} not implemented")
+
     def get_weights(self):
         return self._kernels
 
@@ -308,26 +323,27 @@ class ConvolutionLayer(LayerBase):
         if len(data.shape) == 3:
             return data
 
-    def backward_pass(self, J_L_Y, Y, X):
+    def backward_pass(self, JLY, Y, X):
         # use JLS = JLY * df(Y) instead of JLY when implementing activation functions
-        dilated_JLY = ConvolutionLayer._dilate_output(
-            J_L_Y,
+        JLS = JLY * self._apply_activation_function_derivative(Y)
+        dilated_JLS = ConvolutionLayer._dilate_output(
+            JLS,
             dilation_factor=self._stride - 1,
         )
         reshaped_X = ConvolutionLayer._convert_to_3d(X)
-        J_L_X = self._calculate_JLX(dilated_JLY, reshaped_X)
-        J_L_W = self._calculate_JLW(dilated_JLY, reshaped_X)
+        JLX = self._calculate_JLX(dilated_JLS, reshaped_X)
+        JLW = self._calculate_JLW(dilated_JLS, reshaped_X)
 
-        if J_L_W.shape != self._kernels.shape:
+        if JLW.shape != self._kernels.shape:
             raise Exception(
-                f"JLW shape: {J_L_W.shape}, kernel shape: {self._kernels.shape}, mode: {self._mode}"
+                f"JLW shape: {JLW.shape}, kernel shape: {self._kernels.shape}, mode: {self._mode}"
             )
-        if J_L_X.shape != reshaped_X.shape:
+        if JLX.shape != reshaped_X.shape:
             raise Exception(
-                f"JLX shape: {J_L_X.shape}, X shape: {reshaped_X.shape}, mode: {self._mode}"
+                f"JLX shape: {JLX.shape}, X shape: {reshaped_X.shape}, mode: {self._mode}"
             )
 
-        return J_L_W, J_L_X
+        return JLW, JLX
 
     def forward_pass(self, data):
         if len(data.shape) == 1:
