@@ -1,3 +1,4 @@
+import operator
 import numpy as np
 from functools import reduce
 from NeuralNetwork.Math import Activation
@@ -31,31 +32,26 @@ class DenseLayer(LayerBase):
 
     @staticmethod
     def _initialize_weights(
-        weights, input_neurons, neurons, initial_weight_range, use_bias
+        weights, input_shape, neurons, initial_weight_range, use_bias
     ):
-        if isinstance(input_neurons, int):
-            expected_shape = (input_neurons + 1 if use_bias else input_neurons, neurons)
-
-            if weights is not None:
-                if weights.shape != expected_shape:
-                    raise ValueError(
-                        f"Weight matrix must have shape ({expected_shape}), was {weights.shape}"
-                    )
-                return weights
-
-            if initial_weight_range is not None:
-                return np.random.uniform(
-                    low=initial_weight_range[0],
-                    high=initial_weight_range[1],
-                    size=expected_shape,
-                )
-
-            return np.random.random_sample(expected_shape)
+        input_neurons = np.product(input_shape)
+        expected_shape = (input_neurons + 1 if use_bias else input_neurons, neurons)
 
         if weights is not None:
+            if weights.shape != expected_shape:
+                raise ValueError(
+                    f"Weight matrix must have shape ({expected_shape}), was {weights.shape}"
+                )
             return weights
 
-        return np.random.random_sample(input_neurons + (neurons,))
+        if initial_weight_range is not None:
+            return np.random.uniform(
+                low=initial_weight_range[0],
+                high=initial_weight_range[1],
+                size=expected_shape,
+            )
+
+        return np.random.random_sample(expected_shape)
 
     def _multiply_weights(self, X: np.array):
         return X @ self._weights
@@ -114,13 +110,8 @@ class DenseLayer(LayerBase):
         """
         Data is a row-vector representing a single test case.
         """
-        if len(data.shape) != 1:
-            return self._apply_activation_function(
-                np.einsum("ijk,ijkl->l", data, self._weights)
-            )
-
         return self._apply_activation_function(
-            self._multiply_weights(self._add_bias_neuron_conditionally(data))
+            self._multiply_weights(self._add_bias_neuron_conditionally(data.flatten()))
         )
 
     def backward_pass(self, J_L_Y, Y, X):
@@ -128,30 +119,16 @@ class DenseLayer(LayerBase):
         Returns a tuple of the weight Jacobian and the Jacobian to pass upstream.
         """
         Diag_J_Y_Sum = self._apply_activation_function_derivative(Y)
-        if len(X.shape) != 1:
-            last_shapes = self._get_weights_excluding_bias().T.shape[1:]
-            expanded_J_Y_Sum = np.array([np.full(last_shapes, v) for v in Diag_J_Y_Sum])
-            J_Y_X = np.einsum(
-                "ijkl,lkji->lkji",
-                expanded_J_Y_Sum,
-                self._get_weights_excluding_bias(),
-            )
-            # J_L_X = np.tensordot(J_L_Y[0], J_Y_X.T, axes=([0], [0])).T
-            J_L_X = np.einsum("al,ijkl->ijk", J_L_Y, J_Y_X)
-            J_Y_W = np.einsum("l,ijk->ijkl", Diag_J_Y_Sum, X)
-            # J_L_W = np.einsum("l,ijkl->ijk", J_L_Y[0], J_Y_W)
-            J_L_W = J_L_Y * J_Y_W
-            assert J_L_W.shape == self._get_weights_excluding_bias().shape
-            assert J_L_X.shape == X.shape
-        else:
-            # J_L_X = J_L_Y * J_Y_Sum * W
-            J_Y_Sum = np.diag(Diag_J_Y_Sum)
-            J_hat_Y_W = np.outer(self._add_bias_neuron_conditionally(X), Diag_J_Y_Sum)
-            J_Y_X = np.dot(J_Y_Sum, self._get_weights_excluding_bias().T)
-            J_L_X = np.dot(J_L_Y, J_Y_X)
-            J_L_W = J_L_Y * J_hat_Y_W
+        flattened_X = X.flatten()
+        J_Y_Sum = np.diag(Diag_J_Y_Sum)
+        J_hat_Y_W = np.outer(
+            self._add_bias_neuron_conditionally(flattened_X), Diag_J_Y_Sum
+        )
+        J_Y_X = np.dot(J_Y_Sum, self._get_weights_excluding_bias().T)
+        J_L_X = np.dot(J_L_Y, J_Y_X)
+        J_L_W = J_L_Y * J_hat_Y_W
 
-        return J_L_W, J_L_X
+        return J_L_W, J_L_X.reshape(X.shape)
 
     def update_weights(self, jacobians, learning_rate):
         jacobian_sum = reduce(np.add, jacobians)
