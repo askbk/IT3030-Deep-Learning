@@ -1,5 +1,5 @@
 import numpy as np
-from NeuralNetwork.Math import Loss
+from NeuralNetwork.Layers import ConvolutionLayer
 from DatasetFactory import DatasetFactory
 from DataUtils import translate_labels_to_neuron_activation
 from NetworkFactory import NetworkFactory
@@ -35,6 +35,11 @@ def run_image_classification_convolution():
 
     PerformanceDisplay.display_performance(
         np.ones(100), np.ones(100), testing_performance
+    )
+    print(
+        next(
+            l for l in network._layers if isinstance(l, ConvolutionLayer)
+        ).get_weights()
     )
 
 
