@@ -7,6 +7,34 @@ def test_conv_layer_constructor():
     ConvolutionLayer(kernel_shape=(1, 1, 2))
 
 
+def test_sigmoid_activation():
+    kernel = np.array([[[1, 2, -1]]])
+    data = np.array([[[1, 4, 5, 1, 3, 1, 2, 2]]])
+    layer2 = ConvolutionLayer(
+        _kernels=kernel, mode="same", activation_function="sigmoid"
+    )
+    correct_output2 = np.array(
+        [
+            [
+                [
+                    0.11920292,
+                    0.98201379,
+                    0.99999774,
+                    0.98201379,
+                    0.99752738,
+                    0.95257413,
+                    0.95257413,
+                    0.99752738,
+                ]
+            ]
+        ]
+    )
+
+    output2 = layer2.forward_pass(data)
+
+    assert np.all(np.isclose(output2, correct_output2))
+
+
 def test_1d_forward_pass():
     kernel = np.array([[[1, 2, -1]]])
     data = np.array([[[1, 4, 5, 1, 3, 1, 2, 2]]])
