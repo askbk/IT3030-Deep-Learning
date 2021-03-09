@@ -238,9 +238,13 @@ class Network:
         """
         Returns average performance on test set
         """
+
+        def handle_case(index, case):
+            x, y = case
+            if (100 * index / len(test_set)) % 10 == 0:
+                print(f"{100*index/len(test_set)}% progress")
+            return self._apply_loss_function(y, self.forward_pass(x), penalty=False)
+
         return np.mean(
-            [
-                self._apply_loss_function(y, self.forward_pass(x), penalty=False)
-                for x, y in test_set
-            ]
+            [handle_case(index, case) for index, case in enumerate(test_set)]
         )

@@ -16,6 +16,7 @@ class ConvolutionLayer(LayerBase):
         stride=1,
         initial_weight_range=(-0.1, 0.1),
         activation_function="linear",
+        input_neurons=None,
         _kernels=None,
     ):
         if mode == "same" and stride > 1:
@@ -28,8 +29,14 @@ class ConvolutionLayer(LayerBase):
             kernel_shape, _kernels, initial_weight_range
         )
         self._activation_function = activation_function
-        if _kernels is not None:
-            self._kernels = _kernels
+
+        self._neurons = (
+            None
+            if input_neurons is None
+            else ConvolutionLayer._get_output_neurons(
+                mode, stride, self._kernels.shape, input_neurons
+            )
+        )
 
     @staticmethod
     def _initialize_kernels(kernel_shape, kernels, initial_weight_range):
@@ -57,10 +64,17 @@ class ConvolutionLayer(LayerBase):
         raise ValueError("Mode must be either 'full', 'valid' or 'same'.")
 
     @staticmethod
+    def _get_output_neurons(mode, stride, kernel_shape, data_shape):
+        channels = kernel_shape[0] * data_shape[0]
+        return (channels,) + ConvolutionLayer._get_output_dimensions(
+            mode, stride, kernel_shape[-2:], data_shape[-2:]
+        )
+
+    @staticmethod
     def _get_output_dimensions(mode, stride, kernel_size, data_size):
         if mode == "same":
             return data_size
-
+        # print(kernel_size, data_size)
         kernel_x, kernel_y = kernel_size
         data_x, data_y = data_size
 
@@ -302,9 +316,16 @@ class ConvolutionLayer(LayerBase):
         return J_L_W, J_L_X
 
     def forward_pass(self, data):
+        if len(data.shape) == 1:
+            reshaped = data.reshape((1, 1, len(data)))
+        if len(data.shape) == 2:
+            reshaped = data.reshape((1, *data.shape))
+        if len(data.shape) == 3:
+            reshaped = data
+
         return self._apply_activation_function(
             ConvolutionLayer._correlate(
-                data, self._kernels, mode=self._mode, stride=self._stride
+                reshaped, self._kernels, mode=self._mode, stride=self._stride
             )
         )
 

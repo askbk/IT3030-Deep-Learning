@@ -6,7 +6,7 @@ from NetworkFactory import NetworkFactory
 from PerformanceDisplay import PerformanceDisplay
 
 
-def run_image_classification():
+def run_image_classification_dense():
     train, validate, test = [
         translate_labels_to_neuron_activation(dataset)
         for dataset in DatasetFactory.new_dataset("./configs/1dataset.json")
@@ -22,5 +22,21 @@ def run_image_classification():
     )
 
 
+def run_image_classification_convolution():
+    train, validate, test = [
+        translate_labels_to_neuron_activation(dataset)
+        for dataset in DatasetFactory.new_dataset("./configs/4dataset.json")
+    ]
+
+    network = NetworkFactory.new_network("./configs/4network.json")
+    # training_performance = network.test(train)
+    # validation_performance = network.test(validate)
+    testing_performance = network.test(test)
+
+    PerformanceDisplay.display_performance(
+        np.ones(100), np.ones(100), testing_performance
+    )
+
+
 if __name__ == "__main__":
-    run_image_classification()
+    run_image_classification_convolution()
