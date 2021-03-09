@@ -181,3 +181,22 @@ def test_2d_backward_pass():
         ]
     )
     _backward_output = layer.backward_pass(J_L_Y, forward_output, data)
+
+
+def test_channel_generator():
+    data = np.array([[[1, 2, 3]], [[4, 5, 6]], [[7, 8, 9]], [[10, 11, 12]]])
+    kernel = np.array([[[1, 1, 1]], [[2, 2, 2]]])
+    expected = [
+        [
+            (np.array([[1, 1, 1]]), np.array([[1, 2, 3]])),
+            (np.array([[2, 2, 2]]), np.array([[4, 5, 6]])),
+        ],
+        [
+            (np.array([[1, 1, 1]]), np.array([[7, 8, 9]])),
+            (np.array([[2, 2, 2]]), np.array([[10, 11, 12]])),
+        ],
+    ]
+    output = ConvolutionLayer._channel_generator(data, kernel, False)
+    assert len(output) == 2
+    assert len(output[0]) == len(output[1]) == 2
+    assert np.array_equal(output, expected)

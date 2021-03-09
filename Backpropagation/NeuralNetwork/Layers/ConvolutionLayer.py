@@ -132,14 +132,16 @@ class ConvolutionLayer(LayerBase):
     def _single_kernel_channel_correlation(
         kernel, channel, max_row_index, max_col_index, stride
     ):
+        K = kernel if kernel.shape < channel.shape else channel
+        D = channel if kernel.shape < channel.shape else kernel
         return np.array(
             [
                 [
                     np.sum(
-                        kernel
-                        * channel[
-                            input_row_index : input_row_index + kernel.shape[0],
-                            input_col_index : input_col_index + kernel.shape[1],
+                        K
+                        * D[
+                            input_row_index : input_row_index + K.shape[0],
+                            input_col_index : input_col_index + K.shape[1],
                         ]
                     )
                     for input_col_index in range(0, max_col_index, stride)
@@ -149,10 +151,13 @@ class ConvolutionLayer(LayerBase):
         )
 
     @staticmethod
-    def _channel_generator(data, target_channels, reorder):
+    def _channel_generator(data, kernel, reorder):
         func = distribute if reorder else divide
-        for group in func(target_channels, data):
-            yield group
+        spread = kernel if data.shape[0] < kernel.shape[0] else data
+        repeat = data if data.shape[0] < kernel.shape[0] else kernel
+        return [
+            list(zip(repeat, list(group))) for group in func(repeat.shape[0], spread)
+        ]
 
     @staticmethod
     def _correlate(data, kernels, mode="valid", stride=1):
@@ -193,22 +198,23 @@ class ConvolutionLayer(LayerBase):
         )
 
         data_with_padding = ConvolutionLayer._pad_3d_array(data, padding_x, padding_y)
+
+        def produce_output_channel(kernel_data_channels):
+            return np.sum(
+                [
+                    ConvolutionLayer._single_kernel_channel_correlation(
+                        kernel, data_channel, max_row_index, max_col_index, stride
+                    )
+                    for kernel, data_channel in kernel_data_channels
+                ],
+                axis=0,
+            )
+
         return np.array(
             [
-                np.sum(
-                    [
-                        ConvolutionLayer._single_kernel_channel_correlation(
-                            kernel, channel, max_row_index, max_col_index, stride
-                        )
-                        for channel in channel_group
-                    ],
-                    axis=0,
-                )
-                for kernel, channel_group in zip(
-                    kernels,
-                    ConvolutionLayer._channel_generator(
-                        data_with_padding, target_channels, reorder
-                    ),
+                produce_output_channel(kernel_data_channels)
+                for kernel_data_channels in ConvolutionLayer._channel_generator(
+                    data_with_padding, kernels, reorder
                 )
             ]
         )
@@ -268,40 +274,13 @@ class ConvolutionLayer(LayerBase):
         )
 
     def _calculate_JLW(self, dilated_JLY, X):
-        if self._mode == "full":
-            return ConvolutionLayer._sum_over_channel_intervals(
-                ConvolutionLayer._backward_correlate(
-                    X,
-                    dilated_JLY,
-                    mode="valid",
-                    reorder=False,
-                    target_channels=self._kernels.shape[0],
-                ),
-                self._kernels.shape[0],
-            )
-
-        if self._mode == "same":
-            return ConvolutionLayer._sum_over_channel_intervals(
-                ConvolutionLayer._backward_correlate(
-                    X,
-                    dilated_JLY,
-                    mode="valid",
-                    target_channels=self._kernels.shape[0],
-                    reorder=False,
-                ),
-                self._kernels.shape[0],
-            )
-
         if self._mode == "valid":
-            return ConvolutionLayer._sum_over_channel_intervals(
-                ConvolutionLayer._backward_correlate(
-                    X,
-                    dilated_JLY,
-                    mode="valid",
-                    target_channels=self._kernels.shape[0],
-                    reorder=False,
-                ),
-                self._kernels.shape[0],
+            return ConvolutionLayer._backward_correlate(
+                X,
+                dilated_JLY,
+                mode="valid",
+                target_channels=self._kernels.shape[0],
+                reorder=False,
             )
 
         raise NotImplementedError
@@ -326,7 +305,6 @@ class ConvolutionLayer(LayerBase):
             return data
 
     def backward_pass(self, JLY, Y, X):
-        # use JLS = JLY * df(Y) instead of JLY when implementing activation functions
         JLS = JLY * self._apply_activation_function_derivative(Y)
         dilated_JLS = ConvolutionLayer._dilate_output(
             JLS,
@@ -348,16 +326,12 @@ class ConvolutionLayer(LayerBase):
         return JLW, JLX
 
     def forward_pass(self, data):
-        if len(data.shape) == 1:
-            reshaped = data.reshape((1, 1, len(data)))
-        if len(data.shape) == 2:
-            reshaped = data.reshape((1, *data.shape))
-        if len(data.shape) == 3:
-            reshaped = data
-
         return self._apply_activation_function(
             ConvolutionLayer._correlate(
-                reshaped, self._kernels, mode=self._mode, stride=self._stride
+                ConvolutionLayer._convert_to_3d(data),
+                self._kernels,
+                mode=self._mode,
+                stride=self._stride,
             )
         )
 
