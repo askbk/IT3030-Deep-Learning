@@ -243,7 +243,7 @@ class Network:
             x, y = case
             if (100 * index / len(test_set)) % 10 == 0:
                 print(f"{100*index/len(test_set)}% progress")
-            y_hat = self.forward_pass(np.array(x))
+            y_hat = self.forward_pass(x)
             loss = self._apply_loss_function(y, y_hat, penalty=False)
             if verbose:
                 print(f"Input: {x}\tTarget: {y}\tOutput: {y_hat}\tLoss: {loss}")

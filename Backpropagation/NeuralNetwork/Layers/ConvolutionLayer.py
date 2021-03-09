@@ -188,8 +188,9 @@ class ConvolutionLayer(LayerBase):
         func = distribute if reorder else divide
         spread = kernel if data.shape[0] < kernel.shape[0] else data
         repeat = data if data.shape[0] < kernel.shape[0] else kernel
+        output_channels = spread.shape[0] // repeat.shape[0]
         return [
-            list(zip(repeat, list(group))) for group in func(repeat.shape[0], spread)
+            list(zip(repeat, list(group))) for group in func(output_channels, spread)
         ]
 
     @staticmethod
@@ -270,7 +271,7 @@ class ConvolutionLayer(LayerBase):
     def forward_pass(self, data):
         return self._apply_activation_function(
             ConvolutionLayer._correlate(
-                ConvolutionLayer._convert_to_3d(data),
+                ConvolutionLayer._convert_to_3d(np.array(data)),
                 self._kernels,
                 mode=self._mode,
                 stride=self._stride,
