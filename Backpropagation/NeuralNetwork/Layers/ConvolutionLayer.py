@@ -129,6 +129,15 @@ class ConvolutionLayer(LayerBase):
         return np.pad(array, ((padding_x, padding_x), (padding_y, padding_y)))
 
     @staticmethod
+    def _convert_to_3d(data):
+        if len(data.shape) == 1:
+            return data.reshape((1, 1, len(data)))
+        if len(data.shape) == 2:
+            return data.reshape((1, *data.shape))
+        if len(data.shape) == 3:
+            return data
+
+    @staticmethod
     def _single_kernel_channel_correlation(
         kernel, channel, max_row_index, max_col_index, stride
     ):
@@ -149,15 +158,6 @@ class ConvolutionLayer(LayerBase):
                 for input_row_index in range(0, max_row_index, stride)
             ]
         )
-
-    @staticmethod
-    def _channel_generator(data, kernel, reorder):
-        func = distribute if reorder else divide
-        spread = kernel if data.shape[0] < kernel.shape[0] else data
-        repeat = data if data.shape[0] < kernel.shape[0] else kernel
-        return [
-            list(zip(repeat, list(group))) for group in func(repeat.shape[0], spread)
-        ]
 
     @staticmethod
     def _correlate(data, kernels, mode="valid", stride=1):
@@ -182,6 +182,15 @@ class ConvolutionLayer(LayerBase):
                 for channel in data_with_padding
             ]
         )
+
+    @staticmethod
+    def _channel_generator(data, kernel, reorder):
+        func = distribute if reorder else divide
+        spread = kernel if data.shape[0] < kernel.shape[0] else data
+        repeat = data if data.shape[0] < kernel.shape[0] else kernel
+        return [
+            list(zip(repeat, list(group))) for group in func(repeat.shape[0], spread)
+        ]
 
     @staticmethod
     def _backward_correlate(kernels, data, mode, reorder, stride=1):
@@ -217,60 +226,6 @@ class ConvolutionLayer(LayerBase):
             ]
         )
 
-    def _apply_activation_function(self, S):
-        if self._activation_function == "relu":
-            return Activation.relu(S)
-
-        if self._activation_function == "linear":
-            return Activation.linear(S)
-
-        if self._activation_function == "sigmoid":
-            return Activation.sigmoid(S)
-
-        if self._activation_function == "tanh":
-            return Activation.tanh(S)
-
-        raise NotImplementedError(f"{self._activation_function} not implemented")
-
-    def _apply_activation_function_derivative(self, Y):
-        if self._activation_function == "relu":
-            return Activation.relu_derivative(Y)
-
-        if self._activation_function == "linear":
-            return Activation.linear_derivative(Y)
-
-        if self._activation_function == "sigmoid":
-            return Activation.sigmoid_derivative(Y)
-
-        if self._activation_function == "tanh":
-            return Activation.tanh_derivative(Y)
-
-        raise NotImplementedError(f"{self._activation_function} not implemented")
-
-    def get_weights(self):
-        return self._kernels
-
-    def update_weights(self, jacobians, learning_rate):
-        return ConvolutionLayer(
-            mode=self._mode,
-            stride=self._stride,
-            _kernels=self._kernels - learning_rate * np.sum(jacobians, axis=0),
-        )
-
-    @staticmethod
-    def _sum_over_channel_intervals(array, target_channel_count):
-        channel_count = array.shape[0]
-        channel_interval = channel_count // target_channel_count
-        if len(array.shape) != 3:
-            print(array.shape, array)
-            raise ValueError("array must be 3d")
-        return np.array(
-            [
-                np.sum(array[start : start + channel_interval], axis=0)
-                for start in range(target_channel_count)
-            ]
-        )
-
     def _calculate_JLW(self, dilated_JLS, X):
         if self._mode == "valid":
             return ConvolutionLayer._backward_correlate(
@@ -290,15 +245,6 @@ class ConvolutionLayer(LayerBase):
             stride=1,
             reorder=True,
         )
-
-    @staticmethod
-    def _convert_to_3d(data):
-        if len(data.shape) == 1:
-            return data.reshape((1, 1, len(data)))
-        if len(data.shape) == 2:
-            return data.reshape((1, *data.shape))
-        if len(data.shape) == 3:
-            return data
 
     def backward_pass(self, JLY, Y, X):
         JLS = JLY * self._apply_activation_function_derivative(Y)
@@ -330,6 +276,46 @@ class ConvolutionLayer(LayerBase):
                 stride=self._stride,
             )
         )
+
+    def update_weights(self, jacobians, learning_rate):
+        return ConvolutionLayer(
+            mode=self._mode,
+            stride=self._stride,
+            _kernels=self._kernels - learning_rate * np.sum(jacobians, axis=0),
+        )
+
+    def get_weights(self):
+        return self._kernels
+
+    def _apply_activation_function(self, S):
+        if self._activation_function == "relu":
+            return Activation.relu(S)
+
+        if self._activation_function == "linear":
+            return Activation.linear(S)
+
+        if self._activation_function == "sigmoid":
+            return Activation.sigmoid(S)
+
+        if self._activation_function == "tanh":
+            return Activation.tanh(S)
+
+        raise NotImplementedError(f"{self._activation_function} not implemented")
+
+    def _apply_activation_function_derivative(self, Y):
+        if self._activation_function == "relu":
+            return Activation.relu_derivative(Y)
+
+        if self._activation_function == "linear":
+            return Activation.linear_derivative(Y)
+
+        if self._activation_function == "sigmoid":
+            return Activation.sigmoid_derivative(Y)
+
+        if self._activation_function == "tanh":
+            return Activation.tanh_derivative(Y)
+
+        raise NotImplementedError(f"{self._activation_function} not implemented")
 
     def __repr__(self):
         return f"ConvolutionLayer<kernel_shape={self._kernels.shape}, mode={self._mode}, stride={self._stride}>"
