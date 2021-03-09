@@ -257,6 +257,9 @@ class ConvolutionLayer(LayerBase):
     def _sum_over_channel_intervals(array, target_channel_count):
         channel_count = array.shape[0]
         channel_interval = channel_count // target_channel_count
+        if len(array.shape) != 3:
+            print(array.shape, array)
+            raise ValueError("array must be 3d")
         return np.array(
             [
                 np.sum(array[start : start + channel_interval], axis=0)
@@ -290,7 +293,6 @@ class ConvolutionLayer(LayerBase):
             )
 
         if self._mode == "valid":
-            print(X.shape, dilated_JLY.shape)
             return ConvolutionLayer._sum_over_channel_intervals(
                 ConvolutionLayer._backward_correlate(
                     X,
