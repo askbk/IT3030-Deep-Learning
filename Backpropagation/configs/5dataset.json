@@ -4,6 +4,6 @@
     "side_length": 10,
     "figure_size_range": [8, 10],
     "noise": 0.03,
-    "flatten": false,
+    "flatten": true,
     "centered": false
 }
