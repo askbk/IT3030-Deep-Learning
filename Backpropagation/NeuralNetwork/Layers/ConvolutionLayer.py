@@ -223,6 +223,9 @@ class ConvolutionLayer(LayerBase):
         if self._activation_function == "sigmoid":
             return Activation.sigmoid(S)
 
+        if self._activation_function == "tanh":
+            return Activation.tanh(S)
+
         raise NotImplementedError(f"{self._activation_function} not implemented")
 
     def get_weights(self):
