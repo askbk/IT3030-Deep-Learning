@@ -145,18 +145,18 @@ def test_1d_backward_pass():
 #         layer.backward_pass(JLY, Y, X)
 
 
-# def test_backward_pass_channel_ordering():
-#     kernels = np.array([[[1, 1]], [[0, 0]]])
-#     X = np.array([[[0, 0, 0]], [[1, 1, 1]]])
-#     Y = np.array([[[0, 0]], [[2, 2]], [[0, 0]], [[0, 0]]])
-#     JLY = np.array([[[0, 0]], [[1, 1]], [[0.5, 0.5]], [[0, 0]]])
-#     JLX_expected = np.array([[[0, 0, 0]], [[0.5, 1, 0.5]]])
-#     JLW_expected = np.array([[[2, 2]], [[0, 0]]])
-#     layer = ConvolutionLayer(_kernels=kernels, mode="valid", stride=1)
-#     JLW_actual, JLX_actual = layer.backward_pass(JLY, Y, X)
-#     assert np.all(np.isclose(layer.forward_pass(X), Y))
-#     assert np.all(np.isclose(JLW_actual, JLW_expected))
-#     assert np.all(np.isclose(JLX_actual, JLX_expected))
+def test_backward_pass_channel_ordering():
+    kernels = np.array([[[1, 1]], [[0, 0]]])
+    X = np.array([[[0, 0, 0]], [[1, 1, 1]]])
+    Y = np.array([[[0, 0]], [[2, 2]], [[0, 0]], [[0, 0]]])
+    JLY = np.array([[[0, 0]], [[1, 1]], [[0.5, 0.5]], [[0, 0]]])
+    JLX_expected = np.array([[[0, 0, 0]], [[0.5, 1, 0.5]]])
+    JLW_expected = np.array([[[2, 2]], [[0, 0]]])
+    layer = ConvolutionLayer(_kernels=kernels, mode="valid", stride=1)
+    JLW_actual, JLX_actual = layer.backward_pass(JLY, Y, X)
+    assert np.all(np.isclose(layer.forward_pass(X), Y))
+    assert np.all(np.isclose(JLW_actual, JLW_expected))
+    assert np.all(np.isclose(JLX_actual, JLX_expected))
 
 
 def test_2d_backward_pass():

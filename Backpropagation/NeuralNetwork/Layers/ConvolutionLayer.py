@@ -275,6 +275,7 @@ class ConvolutionLayer(LayerBase):
             )
 
         if self._mode == "valid":
+            print(X.shape, dilated_JLY.shape)
             return ConvolutionLayer._sum_over_channel_intervals(
                 ConvolutionLayer._backward_correlate(
                     X,
@@ -298,22 +299,32 @@ class ConvolutionLayer(LayerBase):
             target_channels=X.shape[0],
         )
 
+    @staticmethod
+    def _convert_to_3d(data):
+        if len(data.shape) == 1:
+            return data.reshape((1, 1, len(data)))
+        if len(data.shape) == 2:
+            return data.reshape((1, *data.shape))
+        if len(data.shape) == 3:
+            return data
+
     def backward_pass(self, J_L_Y, Y, X):
         # use JLS = JLY * df(Y) instead of JLY when implementing activation functions
         dilated_JLY = ConvolutionLayer._dilate_output(
             J_L_Y,
             dilation_factor=self._stride - 1,
         )
-        J_L_W = self._calculate_JLW(dilated_JLY, X)
-        J_L_X = self._calculate_JLX(dilated_JLY, X)
+        reshaped_X = ConvolutionLayer._convert_to_3d(X)
+        J_L_X = self._calculate_JLX(dilated_JLY, reshaped_X)
+        J_L_W = self._calculate_JLW(dilated_JLY, reshaped_X)
 
         if J_L_W.shape != self._kernels.shape:
             raise Exception(
                 f"JLW shape: {J_L_W.shape}, kernel shape: {self._kernels.shape}, mode: {self._mode}"
             )
-        if J_L_X.shape != X.shape:
+        if J_L_X.shape != reshaped_X.shape:
             raise Exception(
-                f"JLX shape: {J_L_X.shape}, X shape: {X.shape}, mode: {self._mode}"
+                f"JLX shape: {J_L_X.shape}, X shape: {reshaped_X.shape}, mode: {self._mode}"
             )
 
         return J_L_W, J_L_X
