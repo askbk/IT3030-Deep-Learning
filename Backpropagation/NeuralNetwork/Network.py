@@ -234,7 +234,7 @@ class Network:
             (self, np.array([]), np.array([])),
         )
 
-    def test(self, test_set):
+    def test(self, test_set, verbose=False):
         """
         Returns average performance on test set
         """
@@ -243,9 +243,12 @@ class Network:
             x, y = case
             if (100 * index / len(test_set)) % 10 == 0:
                 print(f"{100*index/len(test_set)}% progress")
-            return self._apply_loss_function(
-                y, self.forward_pass(np.array(x)), penalty=False
-            )
+            y_hat = self.forward_pass(np.array(x))
+            loss = self._apply_loss_function(y, y_hat, penalty=False)
+            if verbose:
+                print(f"Input: {x}\tTarget: {y}\tOutput: {y_hat}\tLoss: {loss}")
+
+            return loss
 
         return np.mean(
             [handle_case(index, case) for index, case in enumerate(test_set)]

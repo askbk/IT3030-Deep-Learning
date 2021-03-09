@@ -31,7 +31,7 @@ def run_image_classification_convolution():
     network = NetworkFactory.new_network("./configs/5network.json")
     # training_performance = network.test(train)
     # validation_performance = network.test(validate)
-    testing_performance = network.test(test)
+    testing_performance = network.test(test, verbose=False)
 
     PerformanceDisplay.display_performance(
         np.ones(100), np.ones(100), testing_performance
