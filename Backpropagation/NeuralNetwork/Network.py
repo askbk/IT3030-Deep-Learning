@@ -203,7 +203,8 @@ class Network:
     def _train_without_validation(minibatch_count, verbose=False):
         def train_without_validation(acc: Tuple[Network, np.array], batch):
             network, acc_training_performance, *_ = acc
-            print(f"Minibatch {len(acc_training_performance)+1}/{minibatch_count}")
+            if len(acc_training_performance) % 10 == 0:
+                print(f"Minibatch {len(acc_training_performance)+1}/{minibatch_count}")
             trained, training_performance = network._train_minibatch(
                 batch, verbose=verbose
             )

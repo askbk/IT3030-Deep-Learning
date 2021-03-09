@@ -30,17 +30,17 @@ def run_image_classification_convolution():
 
     network, training_performance, validation_performance = NetworkFactory.new_network(
         "./configs/5network.json"
-    ).train(train, 10, validate)
+    ).train(train, 100, validate)
     testing_performance = network.test(test, verbose=False)
 
     PerformanceDisplay.display_performance(
         training_performance, validation_performance, testing_performance
     )
-    print(
-        next(
-            l for l in network._layers if isinstance(l, ConvolutionLayer)
-        ).get_weights()
-    )
+    # print(
+    #     next(
+    #         l for l in network._layers if isinstance(l, ConvolutionLayer)
+    #     ).get_weights()
+    # )
 
 
 if __name__ == "__main__":
