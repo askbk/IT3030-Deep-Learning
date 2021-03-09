@@ -185,10 +185,10 @@ class Network:
     def _train_with_validation(validation_set, minibatch_count, verbose=False):
         def train_with_validation(acc: Tuple[Network, np.array, np.array], batch):
             network, acc_training_performance, acc_validation_performance = acc
+            print(f"Minibatch {len(acc_training_performance)+1}/{minibatch_count}")
             trained, training_performance = network._train_minibatch(
                 batch, verbose=verbose
             )
-            print(f"Minibatch {len(acc_training_performance)+1}/{minibatch_count}")
             return (
                 trained,
                 np.array([*acc_training_performance, training_performance]),
