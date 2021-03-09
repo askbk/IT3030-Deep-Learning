@@ -184,9 +184,7 @@ class ConvolutionLayer(LayerBase):
         )
 
     @staticmethod
-    def _backward_correlate(in1, in2, mode, target_channels, reorder, stride=1):
-        kernels = in1 if in1.shape[-2:] < in2.shape[-2:] else in2
-        data = in2 if in1.shape[-2:] < in2.shape[-2:] else in1
+    def _backward_correlate(kernels, data, mode, reorder, stride=1):
         _channels, rows, columns = data.shape
         kernel_size = kernels.shape[-2:]
         padding_x, padding_y = ConvolutionLayer._get_padding(mode, stride, kernel_size)
@@ -273,26 +271,24 @@ class ConvolutionLayer(LayerBase):
             ]
         )
 
-    def _calculate_JLW(self, dilated_JLY, X):
+    def _calculate_JLW(self, dilated_JLS, X):
         if self._mode == "valid":
             return ConvolutionLayer._backward_correlate(
+                dilated_JLS,
                 X,
-                dilated_JLY,
                 mode="valid",
-                target_channels=self._kernels.shape[0],
                 reorder=False,
             )
 
         raise NotImplementedError
 
-    def _calculate_JLX(self, dilated_JLY, X):
+    def _calculate_JLX(self, dilated_JLS, X):
         return ConvolutionLayer._backward_correlate(
-            dilated_JLY,
+            dilated_JLS,
             np.fliplr(np.flipud(self._kernels)),
             mode="full",
             stride=1,
             reorder=True,
-            target_channels=X.shape[0],
         )
 
     @staticmethod

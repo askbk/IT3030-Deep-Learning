@@ -28,13 +28,13 @@ def run_image_classification_convolution():
         for dataset in DatasetFactory.new_dataset("./configs/5dataset.json")
     ]
 
-    network = NetworkFactory.new_network("./configs/5network.json")
-    # training_performance = network.test(train)
-    # validation_performance = network.test(validate)
+    network, training_performance, validation_performance = NetworkFactory.new_network(
+        "./configs/5network.json"
+    ).train(train, 10, validate)
     testing_performance = network.test(test, verbose=False)
 
     PerformanceDisplay.display_performance(
-        np.ones(100), np.ones(100), testing_performance
+        training_performance, validation_performance, testing_performance
     )
     print(
         next(
