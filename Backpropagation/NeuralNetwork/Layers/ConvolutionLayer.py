@@ -1,6 +1,6 @@
 import math
 import numpy as np
-from more_itertools import intersperse
+from more_itertools import intersperse, distribute, divide
 from itertools import product
 from scipy.signal import convolve, correlate
 from scipy.ndimage import grey_dilation
@@ -78,6 +78,9 @@ class ConvolutionLayer(LayerBase):
         if mode == "full":
             return data_size + 2 * padding - kernel_size + 1
 
+        if mode == "same":
+            return data_size + 2 * padding - kernel_size + 1
+
         return data_size + padding - kernel_size + 1
 
     @staticmethod
@@ -109,16 +112,35 @@ class ConvolutionLayer(LayerBase):
         return np.pad(array, ((padding_x, padding_x), (padding_y, padding_y)))
 
     @staticmethod
-    def _correlate(data, kernels, mode="valid", stride=1):
-        channels, rows, columns = data.shape
-        kernel_size = kernels.shape[-2:]
-        out_channels = channels * len(kernels)
-        output = np.empty(
-            (out_channels,)
-            + ConvolutionLayer._get_output_dimensions(
-                mode, stride, kernel_size, (rows, columns)
-            )
+    def _single_kernel_channel_correlation(
+        kernel, channel, max_row_index, max_col_index, stride
+    ):
+        return np.array(
+            [
+                [
+                    np.sum(
+                        kernel
+                        * channel[
+                            input_row_index : input_row_index + kernel.shape[0],
+                            input_col_index : input_col_index + kernel.shape[1],
+                        ]
+                    )
+                    for input_col_index in range(0, max_col_index, stride)
+                ]
+                for input_row_index in range(0, max_row_index, stride)
+            ]
         )
+
+    @staticmethod
+    def _channel_generator(data, target_channels, reorder):
+        func = distribute if reorder else divide
+        for group in func(target_channels, data):
+            yield group
+
+    @staticmethod
+    def _correlate(data, kernels, mode="valid", stride=1):
+        _channels, rows, columns = data.shape
+        kernel_size = kernels.shape[-2:]
         padding_x, padding_y = ConvolutionLayer._get_padding(mode, stride, kernel_size)
         max_row_index = ConvolutionLayer._get_max_input_index(
             mode, kernel_size[0], rows, padding_x
@@ -126,26 +148,53 @@ class ConvolutionLayer(LayerBase):
         max_col_index = ConvolutionLayer._get_max_input_index(
             mode, kernel_size[1], columns, padding_y
         )
-        for kernel_index, kernel in enumerate(kernels):
-            for channel_index, channel in enumerate(data):
-                output_channel_index = channels * kernel_index + channel_index
-                padded_channel = ConvolutionLayer._pad_2d_array(
-                    channel, padding_x, padding_y
+
+        data_with_padding = ConvolutionLayer._pad_3d_array(data, padding_x, padding_y)
+
+        return np.array(
+            [
+                ConvolutionLayer._single_kernel_channel_correlation(
+                    kernel, channel, max_row_index, max_col_index, stride
                 )
-                for out_row_index, input_row_index in enumerate(
-                    range(0, max_row_index, stride)
-                ):
-                    for out_col_index, input_col_index in enumerate(
-                        range(0, max_col_index, stride)
-                    ):
-                        padded_channel_slice = padded_channel[
-                            input_row_index : input_row_index + kernel_size[0],
-                            input_col_index : input_col_index + kernel_size[1],
-                        ]
-                        output[output_channel_index][out_row_index][
-                            out_col_index
-                        ] = np.einsum("ij, ij", kernel, padded_channel_slice)
-        return output
+                for kernel in kernels
+                for channel in data_with_padding
+            ]
+        )
+
+    @staticmethod
+    def _backward_correlate(in1, in2, mode, target_channels, reorder, stride=1):
+        kernels = in1 if in1.shape[-2:] < in2.shape[-2:] else in2
+        data = in2 if in1.shape[-2:] < in2.shape[-2:] else in1
+        _channels, rows, columns = data.shape
+        kernel_size = kernels.shape[-2:]
+        padding_x, padding_y = ConvolutionLayer._get_padding(mode, stride, kernel_size)
+        max_row_index = ConvolutionLayer._get_max_input_index(
+            mode, kernel_size[0], rows, padding_x
+        )
+        max_col_index = ConvolutionLayer._get_max_input_index(
+            mode, kernel_size[1], columns, padding_y
+        )
+
+        data_with_padding = ConvolutionLayer._pad_3d_array(data, padding_x, padding_y)
+        return np.array(
+            [
+                np.sum(
+                    [
+                        ConvolutionLayer._single_kernel_channel_correlation(
+                            kernel, channel, max_row_index, max_col_index, stride
+                        )
+                        for channel in channel_group
+                    ],
+                    axis=0,
+                )
+                for kernel, channel_group in zip(
+                    kernels,
+                    ConvolutionLayer._channel_generator(
+                        data_with_padding, target_channels, reorder
+                    ),
+                )
+            ]
+        )
 
     def get_weights(self):
         return self._kernels
@@ -168,35 +217,72 @@ class ConvolutionLayer(LayerBase):
             ]
         )
 
-    def backward_pass(self, J_L_Y, Y, X):
-        padding_x, padding_y = self._kernels.shape[-2] - 1, self._kernels.shape[-1] - 1
-        dilated_output = ConvolutionLayer._dilate_output(
-            Y,
-            dilation_factor=self._stride - 1,
+    def _calculate_JLW(self, dilated_JLY, X):
+        if self._mode == "full":
+            return ConvolutionLayer._sum_over_channel_intervals(
+                ConvolutionLayer._backward_correlate(
+                    X,
+                    dilated_JLY,
+                    mode="valid",
+                    reorder=False,
+                    target_channels=self._kernels.shape[0],
+                ),
+                self._kernels.shape[0],
+            )
+
+        if self._mode == "same":
+            return ConvolutionLayer._sum_over_channel_intervals(
+                ConvolutionLayer._backward_correlate(
+                    X,
+                    dilated_JLY,
+                    mode="valid",
+                    target_channels=self._kernels.shape[0],
+                    reorder=False,
+                ),
+                self._kernels.shape[0],
+            )
+
+        if self._mode == "valid":
+            return ConvolutionLayer._sum_over_channel_intervals(
+                ConvolutionLayer._backward_correlate(
+                    X,
+                    dilated_JLY,
+                    mode="valid",
+                    target_channels=self._kernels.shape[0],
+                    reorder=False,
+                ),
+                self._kernels.shape[0],
+            )
+
+        raise NotImplementedError
+
+    def _calculate_JLX(self, dilated_JLY, X):
+        return ConvolutionLayer._backward_correlate(
+            dilated_JLY,
+            np.fliplr(np.flipud(self._kernels)),
+            mode="full",
+            stride=1,
+            reorder=True,
+            target_channels=X.shape[0],
         )
 
-        padded_dilated_output = ConvolutionLayer._pad_3d_array(
-            dilated_output, padding_x, padding_y
+    def backward_pass(self, J_L_Y, Y, X):
+        # use JLS = JLY * df(Y) instead of JLY when implementing activation functions
+        dilated_JLY = ConvolutionLayer._dilate_output(
+            J_L_Y,
+            dilation_factor=self._stride - 1,
         )
-        print(X.shape, dilated_output.shape)
-        temp = ConvolutionLayer._correlate(X, dilated_output, mode=self._mode)
-        print(temp.shape, self._kernels.shape)
-        J_L_W = ConvolutionLayer._sum_over_channel_intervals(
-            temp,
-            self._kernels.shape[0],
-        )
-        flipped_kernel = np.fliplr(np.flipud(self._kernels))
-        J_L_X = ConvolutionLayer._sum_over_channel_intervals(
-            ConvolutionLayer._correlate(
-                padded_dilated_output, flipped_kernel, mode=self._mode
-            ),
-            X.shape[0],
-        )
-        # print(J_L_W.shape, self._kernels.shape, J_L_W.shape == self._kernels.shape)
-        assert J_L_W.shape == self._kernels.shape
-        # print(J_L_X.shape, padded_dilated_output.shape, flipped_kernel.shape)
-        # print("goal shape:", X.shape)
-        assert J_L_X.shape == X.shape
+        J_L_W = self._calculate_JLW(dilated_JLY, X)
+        J_L_X = self._calculate_JLX(dilated_JLY, X)
+
+        if J_L_W.shape != self._kernels.shape:
+            raise Exception(
+                f"JLW shape: {J_L_W.shape}, kernel shape: {self._kernels.shape}, mode: {self._mode}"
+            )
+        if J_L_X.shape != X.shape:
+            raise Exception(
+                f"JLX shape: {J_L_X.shape}, X shape: {X.shape}, mode: {self._mode}"
+            )
 
         return J_L_W, J_L_X
 
