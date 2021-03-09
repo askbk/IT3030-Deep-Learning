@@ -5,6 +5,7 @@ from itertools import product
 from scipy.signal import convolve, correlate
 from scipy.ndimage import grey_dilation
 from NeuralNetwork.Layers import LayerBase
+from NeuralNetwork.Math import Activation
 
 
 class ConvolutionLayer(LayerBase):
@@ -14,6 +15,7 @@ class ConvolutionLayer(LayerBase):
         mode="valid",
         stride=1,
         initial_weight_range=(-0.1, 0.1),
+        activation_function="linear",
         _kernels=None,
     ):
         if mode == "same" and stride > 1:
@@ -25,6 +27,7 @@ class ConvolutionLayer(LayerBase):
         self._kernels = ConvolutionLayer._initialize_kernels(
             kernel_shape, _kernels, initial_weight_range
         )
+        self._activation_function = activation_function
         if _kernels is not None:
             self._kernels = _kernels
 
@@ -196,6 +199,15 @@ class ConvolutionLayer(LayerBase):
             ]
         )
 
+    def _apply_activation_function(self, S):
+        if self._activation_function == "relu":
+            return Activation.relu(S)
+
+        if self._activation_function == "linear":
+            return Activation.linear(S)
+
+        raise NotImplementedError(f"{self._activation_function} not implemented")
+
     def get_weights(self):
         return self._kernels
 
@@ -287,8 +299,10 @@ class ConvolutionLayer(LayerBase):
         return J_L_W, J_L_X
 
     def forward_pass(self, data):
-        return ConvolutionLayer._correlate(
-            data, self._kernels, mode=self._mode, stride=self._stride
+        return self._apply_activation_function(
+            ConvolutionLayer._correlate(
+                data, self._kernels, mode=self._mode, stride=self._stride
+            )
         )
 
     def __repr__(self):

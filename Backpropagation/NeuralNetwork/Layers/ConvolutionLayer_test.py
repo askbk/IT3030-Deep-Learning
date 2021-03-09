@@ -64,11 +64,11 @@ def test_multichannel_2d_forward_pass():
             [[0, 1, 0, 1], [1, 0, 3, 2], [4, 0, 1, 5], [1, 2, 0, 0]],
         ]
     )
-    layer = ConvolutionLayer(_kernels=kernels, mode="valid")
+    layer = ConvolutionLayer(_kernels=kernels, mode="valid", activation_function="relu")
     correct_output = np.array(
         [
-            [[-1, 2, 0], [7, 2, -2], [-2, 5, 4]],
-            [[-1, 4, -1], [-3, 1, 7], [5, -2, 1]],
+            [[0, 2, 0], [7, 2, 0], [0, 5, 4]],
+            [[0, 4, 0], [0, 1, 7], [5, 0, 1]],
             [[4, 1, 3], [1, 6, 7], [7, 6, 3]],
             [[2, 0, 4], [4, 3, 3], [1, 3, 5]],
         ]
