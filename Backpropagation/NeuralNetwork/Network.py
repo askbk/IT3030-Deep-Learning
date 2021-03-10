@@ -167,7 +167,7 @@ class Network:
                 list(weight_jac + (reg_jac,)), self._learning_rate
             )
 
-        with Pool(8) as pool:
+        with Pool(None) as pool:
             training_results = pool.map(self._forward_backward, batch)
             weight_jacobians, case_loss = zip(*training_results)
             layer_weights = [layer.get_weights() for layer in self._layers]
