@@ -1,6 +1,7 @@
 import numpy as np
 from typing import Tuple
 from functools import reduce
+from multiprocessing import Pool
 from NeuralNetwork.Math import Loss
 
 
@@ -158,26 +159,26 @@ class Network:
         )
 
     def _train_minibatch(self, batch, verbose=False):
-        weight_jacobians, case_loss = zip(
-            *map(lambda case: self._forward_backward(case, verbose=verbose), batch)
-        )
-        regularization_jacobians = map(
-            lambda layer: self._apply_regularization_derivative(layer.get_weights()),
-            self._layers,
-        )
-
         def update_layer_weights(args):
             layer, weight_jac, reg_jac = args
             return layer.update_weights(
                 list(weight_jac + (reg_jac,)), self._learning_rate
             )
 
-        updated_layers = list(
-            map(
-                update_layer_weights,
-                zip(self._layers, zip(*weight_jacobians), regularization_jacobians),
+        with Pool(8) as pool:
+            training_results = pool.map(self._forward_backward, batch)
+            weight_jacobians, case_loss = zip(*training_results)
+            layer_weights = [layer.get_weights() for layer in self._layers]
+            regularization_jacobians = pool.map(
+                self._apply_regularization_derivative,
+                layer_weights,
             )
-        )
+            updated_layers = list(
+                map(
+                    update_layer_weights,
+                    zip(self._layers, zip(*weight_jacobians), regularization_jacobians),
+                )
+            )
 
         return Network._update_layers(self, updated_layers), np.mean(case_loss)
 
