@@ -150,13 +150,15 @@ class Network:
             y, layer_outputs[-1]
         )
 
+    def _validate_single_case(self, case):
+        x, y = case
+        return self._apply_loss_function(y, self.forward_pass(x))
+
     def _validate(self, validation_set):
-        return np.mean(
-            [
-                self._apply_loss_function(y, self.forward_pass(x))
-                for x, y in validation_set
-            ]
-        )
+        with Pool(None) as pool:
+            loss = pool.map(self._validate_single_case, validation_set)
+
+        return np.mean(loss)
 
     def _train_minibatch(self, batch, verbose=False):
         def update_layer_weights(args):
