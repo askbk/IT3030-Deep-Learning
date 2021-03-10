@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.pyplot as plt
 from NeuralNetwork.Layers import ConvolutionLayer
 from DatasetFactory import DatasetFactory
 from DataUtils import translate_labels_to_neuron_activation
@@ -36,11 +37,12 @@ def run_image_classification_convolution():
     PerformanceDisplay.display_performance(
         training_performance, validation_performance, testing_performance
     )
-    # print(
-    #     next(
-    #         l for l in network._layers if isinstance(l, ConvolutionLayer)
-    #     ).get_weights()
-    # )
+    kernel = next(
+        l for l in network._layers if isinstance(l, ConvolutionLayer)
+    ).get_weights()
+    c, r, l = kernel.shape
+    plt.matshow(kernel.reshape((c * r, l)))
+    plt.show()
 
 
 if __name__ == "__main__":
