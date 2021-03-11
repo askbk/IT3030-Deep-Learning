@@ -1,7 +1,7 @@
 import operator
 import numpy as np
 from functools import reduce
-from NeuralNetwork.Math import Activation
+from NeuralNetwork.Math import Activation, glorot_init
 from NeuralNetwork.Layers import LayerBase
 
 
@@ -34,8 +34,10 @@ class DenseLayer(LayerBase):
     def _initialize_weights(
         weights, input_shape, neurons, initial_weight_range, use_bias
     ):
-        input_neurons = np.product(input_shape)
-        expected_shape = (input_neurons + 1 if use_bias else input_neurons, neurons)
+        input_neurons = (
+            np.product(input_shape) + 1 if use_bias else np.product(input_shape)
+        )
+        expected_shape = (input_neurons, neurons)
 
         if weights is not None:
             if weights.shape != expected_shape:
@@ -43,6 +45,11 @@ class DenseLayer(LayerBase):
                     f"Weight matrix must have shape ({expected_shape}), was {weights.shape}"
                 )
             return weights
+
+        if initial_weight_range is None:
+            return glorot_init(input_neurons, neurons, input_neurons * neurons).reshape(
+                expected_shape
+            )
 
         if initial_weight_range is not None:
             return np.random.uniform(

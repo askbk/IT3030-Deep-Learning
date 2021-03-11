@@ -91,3 +91,8 @@ class Loss:
     @staticmethod
     def L2_regularization(parameters):
         return 0.5 * np.sum(parameters ** 2)
+
+
+def glorot_init(input_neurons, layer_neurons, weight_count):
+    bound = np.sqrt(6 / (input_neurons + layer_neurons))
+    return np.random.default_rng().uniform(-bound, bound, weight_count)

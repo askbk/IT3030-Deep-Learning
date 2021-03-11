@@ -5,7 +5,7 @@ from itertools import product
 from scipy.signal import convolve, correlate
 from scipy.ndimage import grey_dilation
 from NeuralNetwork.Layers import LayerBase
-from NeuralNetwork.Math import Activation
+from NeuralNetwork.Math import Activation, glorot_init
 
 
 class ConvolutionLayer(LayerBase):
@@ -26,7 +26,7 @@ class ConvolutionLayer(LayerBase):
         self._mode = mode
         self._stride = stride
         self._kernels = ConvolutionLayer._initialize_kernels(
-            kernel_shape, _kernels, initial_weight_range
+            input_neurons, kernel_shape, _kernels, initial_weight_range
         )
         self._activation_function = activation_function
 
@@ -39,9 +39,14 @@ class ConvolutionLayer(LayerBase):
         )
 
     @staticmethod
-    def _initialize_kernels(kernel_shape, kernels, initial_weight_range):
+    def _initialize_kernels(input_neurons, kernel_shape, kernels, initial_weight_range):
         if kernels is not None:
             return kernels
+
+        if initial_weight_range is None:
+            return glorot_init(
+                np.prod(input_neurons), np.prod(kernel_shape), np.prod(kernel_shape)
+            ).reshape(kernel_shape)
 
         return np.random.default_rng().uniform(
             low=initial_weight_range[0], high=initial_weight_range[1], size=kernel_shape

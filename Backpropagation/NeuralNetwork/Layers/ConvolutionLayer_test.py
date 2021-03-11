@@ -4,7 +4,7 @@ from NeuralNetwork.Layers import ConvolutionLayer
 
 
 def test_conv_layer_constructor():
-    ConvolutionLayer(kernel_shape=(1, 1, 2))
+    ConvolutionLayer(kernel_shape=(1, 1, 2), input_neurons=(1, 1, 10))
 
 
 def test_sigmoid_activation():
