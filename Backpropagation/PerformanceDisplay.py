@@ -11,7 +11,7 @@ class PerformanceDisplay:
         x_test = np.arange(training_length, int(training_length * 1.05))
 
         plt.plot(x_training, training, label="training")
-        if validation:
+        if validation is not None:
             plt.plot(x_training, validation, label="validation")
         plt.plot(x_test, test_stretched, label="test")
 
