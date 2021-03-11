@@ -6,9 +6,10 @@ class PerformanceDisplay:
     @staticmethod
     def display_performance(training, validation, test):
         training_length = len(training)
-        test_stretched = np.full(int(0.05 * training_length), test)
+        test_length = int(0.1 * training_length)
+        test_stretched = np.full(test_length, test)
         x_training = np.arange(training_length)
-        x_test = np.arange(training_length, int(training_length * 1.05))
+        x_test = np.arange(training_length, training_length + test_length)
 
         plt.plot(x_training, training, label="training")
         if validation is not None:
