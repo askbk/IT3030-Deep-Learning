@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 from tensorflow import keras
 from tensorflow.keras import layers
-from tensorflow.keras.datasets import mnist
+from tensorflow.keras import datasets
 from tensorflow.keras.models import Model
 
 from Autoencoder import Autoencoder
@@ -50,7 +50,7 @@ def display(array1, array2):
 
 
 def test_autoencoder():
-    (train_data, _), (test_data, _) = mnist.load_data()
+    (train_data, _), (test_data, _) = datasets.mnist.load_data()
 
     # Normalize and reshape the data
     train_data = preprocess(train_data)
@@ -72,14 +72,9 @@ def test_autoencoder():
 
 def test_supervised_classifier():
     num_classes = 10
-    (x_train, y_train), (x_test, y_test) = mnist.load_data()
-
-    # Scale images to the [0, 1] range
-    x_train = x_train.astype("float32") / 255
-    x_test = x_test.astype("float32") / 255
-    # Make sure images have shape (28, 28, 1)
-    x_train = np.expand_dims(x_train, -1)
-    x_test = np.expand_dims(x_test, -1)
+    (x_train, y_train), (x_test, y_test) = datasets.mnist.load_data()
+    x_train = preprocess(x_train)
+    x_test = preprocess(x_test)
 
     y_train = keras.utils.to_categorical(y_train, num_classes)
     y_test = keras.utils.to_categorical(y_test, num_classes)
