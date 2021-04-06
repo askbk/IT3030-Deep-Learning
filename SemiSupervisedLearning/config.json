@@ -1,0 +1,21 @@
+{
+    "dataset": "mnist",
+    "labeled_fraction": 0.1,
+    "labeled_split": [0.7, 0.2, 0.1],
+    "autoencoder": {
+        "learning_rate": 0.001,
+        "loss": "mean_squared_error",
+        "optimizer": "adam",
+        "latent_vector_size": 10,
+        "epochs": 10
+    },
+    "classifier": {
+        "learning_rate": 0.001,
+        "loss": "categorical_crossentropy",
+        "optimizer": "adam",
+        "epochs": 10,
+        "freeze_encoder": false
+    },
+    "reconstructions_to_display": 10,
+    "tsne_plot": true
+}
