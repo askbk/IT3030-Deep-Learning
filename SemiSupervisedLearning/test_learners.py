@@ -21,11 +21,7 @@ def get_preprocessed_data(dataset: str):
 
 
 def test_autoencoder():
-    (train_data, _), (test_data, _) = datasets.mnist.load_data()
-
-    # Normalize and reshape the data
-    train_data = preprocess(train_data)
-    test_data = preprocess(test_data)
+    (train_data, _), (test_data, _) = get_preprocessed_data("mnist")
 
     autoencoder = Autoencoder()
     autoencoder.compile(optimizer="adam", loss="binary_crossentropy")
