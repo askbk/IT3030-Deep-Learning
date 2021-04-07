@@ -12,11 +12,36 @@ def load_dataset(dataset_name: str):
         return datasets.mnist.load_data()
 
 
-def get_preprocessed_data(dataset: str):
-    (x_train, y_train), (x_test, y_test) = load_dataset(dataset)
-    return (preprocess(x_train), keras.utils.to_categorical(y_train)), (
-        preprocess(x_test),
-        keras.utils.to_categorical(y_test),
+def get_preprocessed_data(
+    dataset: str, semi_supervised_split=False, split_ratio: float = None
+):
+    train, test = load_dataset(dataset)
+
+    if not semi_supervised_split:
+        return (preprocess(train[0]), keras.utils.to_categorical(train[1])), (
+            preprocess(test[0]),
+            keras.utils.to_categorical(test[1]),
+        )
+
+    (x_train_unlabeled, _), (x_train_labeled, y_train_labeled) = semisupervised_split(
+        train, split_ratio
+    )
+    (x_test_unlabeled, _), (x_test_labeled, y_test_labeled) = semisupervised_split(
+        test, split_ratio
+    )
+
+    x_train_unlabeled = preprocess(x_train_unlabeled)
+    x_test_unlabeled = preprocess(x_test_unlabeled)
+    x_train_labeled = preprocess(x_train_labeled)
+    x_test_labeled = preprocess(x_test_labeled)
+
+    y_train_labeled = keras.utils.to_categorical(y_train_labeled)
+    y_test_labeled = keras.utils.to_categorical(y_test_labeled)
+
+    return (x_train_unlabeled, x_train_labeled, y_train_labeled), (
+        x_test_unlabeled,
+        x_test_labeled,
+        y_test_labeled,
     )
 
 
@@ -58,17 +83,9 @@ def test_supervised_classifier():
 
 
 def test_semi_supervised_classifier():
-    labeled_fraction = 0.5
-    train, test = datasets.mnist.load_data()
-    (x1_train, _), (x2_train, y2_train) = semisupervised_split(train, labeled_fraction)
-    (x1_test, _), (x2_test, y2_test) = semisupervised_split(test, labeled_fraction)
-
-    # Normalize and reshape the data
-    x1_train = preprocess(x1_train)
-    x1_test = preprocess(x1_test)
-    x2_train = preprocess(x2_train)
-    x2_test = preprocess(x2_test)
-
+    (x1_train, x2_train, y2_train), (x1_test, x2_test, y2_test) = get_preprocessed_data(
+        "mnist", semi_supervised_split=True, split_ratio=0.5
+    )
     autoencoder = Autoencoder()
     autoencoder.compile(optimizer="adam", loss="binary_crossentropy")
     autoencoder.fit(
@@ -79,11 +96,6 @@ def test_semi_supervised_classifier():
         shuffle=True,
         validation_data=(x1_test, x1_test),
     )
-
-    num_classes = 10
-
-    y2_train = keras.utils.to_categorical(y2_train, num_classes)
-    y2_test = keras.utils.to_categorical(y2_test, num_classes)
 
     classifier = Classifier(encoder=autoencoder._encoder)
     batch_size = 128
