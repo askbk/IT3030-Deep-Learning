@@ -7,6 +7,19 @@ from Classifier import Classifier
 from Utils import semisupervised_split, preprocess, display
 
 
+def load_dataset(dataset_name: str):
+    if dataset_name == "mnist":
+        return datasets.mnist.load_data()
+
+
+def get_preprocessed_data(dataset: str):
+    (x_train, y_train), (x_test, y_test) = load_dataset(dataset)
+    return (preprocess(x_train), keras.utils.to_categorical(y_train)), (
+        preprocess(x_test),
+        keras.utils.to_categorical(y_test),
+    )
+
+
 def test_autoencoder():
     (train_data, _), (test_data, _) = datasets.mnist.load_data()
 
@@ -29,13 +42,7 @@ def test_autoencoder():
 
 
 def test_supervised_classifier():
-    num_classes = 10
-    (x_train, y_train), (x_test, y_test) = datasets.mnist.load_data()
-    x_train = preprocess(x_train)
-    x_test = preprocess(x_test)
-
-    y_train = keras.utils.to_categorical(y_train, num_classes)
-    y_test = keras.utils.to_categorical(y_test, num_classes)
+    (x_train, y_train), (x_test, y_test) = get_preprocessed_data("mnist")
 
     classifier = Classifier()
     batch_size = 128
