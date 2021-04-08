@@ -7,13 +7,15 @@
         "loss": "mean_squared_error",
         "optimizer": "adam",
         "latent_vector_size": 10,
-        "epochs": 10
+        "epochs": 10,
+        "batch_size": 128
     },
     "classifier": {
         "learning_rate": 0.001,
         "loss": "categorical_crossentropy",
         "optimizer": "adam",
         "epochs": 10,
+        "batch_size": 128,
         "freeze_encoder": false
     },
     "reconstructions_to_display": 10,

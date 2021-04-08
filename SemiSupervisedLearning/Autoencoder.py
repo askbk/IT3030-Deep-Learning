@@ -46,3 +46,16 @@ class Autoencoder(keras.Model):
 
     def call(self, inputs):
         return self._decoder(self._encoder(inputs))
+
+    @staticmethod
+    def train(config: dict, unlabeled):
+        autoencoder = Autoencoder()
+        autoencoder.compile(loss=config.get("loss"), optimizer=config.get("optimizer"))
+        autoencoder.fit(
+            x=unlabeled,
+            y=unlabeled,
+            epochs=config.get("epochs"),
+            batch_size=config.get("batch_size"),
+            shuffle=True,
+        )
+        return autoencoder
