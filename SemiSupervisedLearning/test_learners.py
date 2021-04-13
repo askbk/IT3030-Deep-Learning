@@ -2,12 +2,13 @@ from tensorflow.keras import datasets
 
 from Autoencoder import Autoencoder
 from Classifier import Classifier
-from Utils import semisupervised_split, preprocess, display, get_preprocessed_data
+from Utils import semisupervised_split, preprocess, get_preprocessed_data
+from Visualization import graph_training_history, display
 
 
 def test_autoencoder():
     (train_data, _), (test_data, _) = get_preprocessed_data("mnist")
-    autoencoder = Autoencoder.train(
+    autoencoder, history = Autoencoder.train(
         {
             "epochs": 3,
             "batch_size": 256,
@@ -15,10 +16,11 @@ def test_autoencoder():
             "loss": "mean_squared_error",
         },
         train_data[:10000],
-        display_learning_progress=True,
+        return_learning_progress=True,
     )
+    graph_training_history([("autoencoder", history)], keys=["loss"])
     predictions = autoencoder.predict(test_data)
-    display(test_data, predictions)
+    display(test_data, predictions, n=20)
 
 
 def test_supervised_classifier():
@@ -31,7 +33,6 @@ def test_supervised_classifier():
             "loss": "categorical_crossentropy",
         },
         (x_train[:10000], y_train[:10000]),
-        display_learning_progress=True,
     )
     # score = classifier.evaluate(x_test, y_test, verbose=0)
     # print("Test loss:", score[0])
@@ -57,7 +58,6 @@ def test_semi_supervised_classifier():
         },
         x1_train[:10000],
         (x2_train[:10000], y2_train[:10000]),
-        display_learning_progress=True,
     )
     # score = classifier.evaluate(x2_test, y2_test, verbose=0)
     # print("Test loss:", score[0])

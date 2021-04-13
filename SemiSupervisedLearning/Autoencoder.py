@@ -61,5 +61,5 @@ class Autoencoder(keras.Model):
             validation_split=0.1,
         )
         if return_learning_progress:
-            return history
+            return autoencoder, history
         return autoencoder
