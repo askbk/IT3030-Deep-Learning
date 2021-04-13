@@ -9,7 +9,7 @@ def test_autoencoder():
     (train_data, _), (test_data, _) = get_preprocessed_data("mnist")
     autoencoder = Autoencoder.train(
         {
-            "epochs": 5,
+            "epochs": 3,
             "batch_size": 256,
             "optimizer": "adam",
             "loss": "mean_squared_error",
@@ -22,19 +22,20 @@ def test_autoencoder():
 
 
 def test_supervised_classifier():
-    train, (x_test, y_test) = get_preprocessed_data("mnist")
+    (x_train, y_train), (x_test, y_test) = get_preprocessed_data("mnist")
     classifier = Classifier.train_supervised(
         {
-            "epochs": 1,
+            "epochs": 3,
             "batch_size": 256,
             "optimizer": "adam",
             "loss": "categorical_crossentropy",
         },
-        train,
+        (x_train[:10000], y_train[:10000]),
+        display_learning_progress=True,
     )
-    score = classifier.evaluate(x_test, y_test, verbose=0)
-    print("Test loss:", score[0])
-    print("Test accuracy:", score[1])
+    # score = classifier.evaluate(x_test, y_test, verbose=0)
+    # print("Test loss:", score[0])
+    # print("Test accuracy:", score[1])
 
 
 def test_semi_supervised_classifier():
@@ -49,17 +50,18 @@ def test_semi_supervised_classifier():
             "loss": "mean_squared_error",
         },
         {
-            "epochs": 2,
+            "epochs": 3,
             "batch_size": 32,
             "optimizer": "adam",
             "loss": "categorical_crossentropy",
         },
-        x1_train,
-        (x2_train, y2_train),
+        x1_train[:10000],
+        (x2_train[:10000], y2_train[:10000]),
+        display_learning_progress=True,
     )
-    score = classifier.evaluate(x2_test, y2_test, verbose=0)
-    print("Test loss:", score[0])
-    print("Test accuracy:", score[1])
+    # score = classifier.evaluate(x2_test, y2_test, verbose=0)
+    # print("Test loss:", score[0])
+    # print("Test accuracy:", score[1])
 
 
 if __name__ == "__main__":

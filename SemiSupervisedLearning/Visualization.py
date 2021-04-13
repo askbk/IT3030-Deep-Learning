@@ -1,30 +1,29 @@
 import matplotlib.pyplot as plt
 import tensorflow as tf
-from typing import Sequence
+from typing import Sequence, Tuple
 
 
 def graph_training_history(
-    histories: Sequence[tf.keras.callbacks.History], title: str = None
+    histories: Sequence[Tuple[str, tf.keras.callbacks.History]],
+    keys: Sequence[str],
+    title: str = None,
 ):
     plt.figure(1)
-    for history in histories:
-        # summarize history for accuracy
-        # plt.subplot(211)
-        # plt.plot(history.history["acc"])
-        # plt.plot(history.history["val_acc"])
-        # plt.title("model accuracy")
-        # plt.ylabel("accuracy")
-        # plt.xlabel("epoch")
-        # plt.legend(["train", "test"], loc="upper left")
-        # summarize history for loss
-        # loss, val_loss = history.history["loss"], history.history["val_loss"]
-        keys = history.history.keys()
-        for key in keys:
-            plt.plot(history.history[key])
-        # plt.plot(loss)
-        # plt.plot(val_loss)
-        plt.title(title)
-        # plt.ylabel("loss")
-        plt.xlabel("epoch")
-        plt.legend(keys, loc="upper left")
-        plt.show()
+    keys_to_use = list(
+        set(
+            filter(
+                lambda key: any(filter_key in key for filter_key in keys),
+                *(history.history.keys() for _, history in histories),
+            )
+        )
+    )
+    legend_keys = []
+    for name, history in histories:
+        for key in history.history.keys():
+            if key in keys_to_use:
+                plt.plot(history.history[key])
+                legend_keys.append(f"{name} {key}")
+    plt.title(title)
+    plt.xlabel("epoch")
+    plt.legend(legend_keys, loc="upper left")
+    plt.show()

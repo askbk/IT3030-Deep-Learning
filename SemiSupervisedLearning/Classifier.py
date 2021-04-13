@@ -1,7 +1,7 @@
 from functools import reduce
 import tensorflow as tf
 import tensorflow.keras as keras
-
+from Visualization import graph_training_history
 from Autoencoder import Encoder, Autoencoder
 
 
@@ -26,7 +26,7 @@ class Classifier(keras.Model):
         return self._classifier_head(self._encoder(inputs))
 
     @staticmethod
-    def train_supervised(config: dict, training_set):
+    def train_supervised(config: dict, training_set, display_learning_progress=False):
         classifier = Classifier()
         classifier.compile(
             loss=config.get("loss"),
@@ -34,13 +34,16 @@ class Classifier(keras.Model):
             metrics=["accuracy"],
         )
         x, y = training_set
-        classifier.fit(
+        history = classifier.fit(
             x,
             y,
             batch_size=config.get("batch_size"),
             epochs=config.get("epochs"),
             validation_split=0.1,
         )
+        if display_learning_progress:
+            graph_training_history([("supervised", history)], keys=["accuracy"])
+
         return classifier
 
     @staticmethod
@@ -49,6 +52,7 @@ class Classifier(keras.Model):
         classifier_config: dict,
         unlabeled_training_set,
         labeled_training_set,
+        display_learning_progress=False,
     ):
         autoencoder = Autoencoder.train(autoencoder_config, unlabeled_training_set)
         classifier = Classifier(encoder=autoencoder._encoder)
@@ -60,12 +64,13 @@ class Classifier(keras.Model):
 
         x, y = labeled_training_set
 
-        classifier.fit(
+        history = classifier.fit(
             x,
             y,
             batch_size=classifier_config.get("batch_size"),
             epochs=classifier_config.get("epochs"),
             validation_split=0.1,
         )
-
+        if display_learning_progress:
+            graph_training_history([("semisupervised", history)], keys=["accuracy"])
         return classifier

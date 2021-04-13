@@ -61,5 +61,5 @@ class Autoencoder(keras.Model):
             validation_split=0.1,
         )
         if display_learning_progress:
-            graph_training_history([history])
+            graph_training_history([("autoencoder", history)], keys=["loss"])
         return autoencoder
