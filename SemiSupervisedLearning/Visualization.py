@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import tensorflow as tf
 from typing import Sequence, Tuple
+from itertools import chain
 
 
 def graph_training_history(
@@ -13,7 +14,7 @@ def graph_training_history(
         set(
             filter(
                 lambda key: any(filter_key in key for filter_key in keys),
-                *(history.history.keys() for _, history in histories),
+                chain.from_iterable(history.history.keys() for _, history in histories),
             )
         )
     )
