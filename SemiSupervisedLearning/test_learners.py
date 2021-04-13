@@ -1,13 +1,13 @@
+import numpy as np
 from tensorflow.keras import datasets
-
 from Autoencoder import Autoencoder
 from Classifier import Classifier
 from Utils import semisupervised_split, preprocess, get_preprocessed_data
-from Visualization import graph_training_history, display
+from Visualization import graph_training_history, display, tsne_plot
 
 
 def test_autoencoder():
-    (train_data, _), (test_data, _) = get_preprocessed_data("mnist")
+    (train_data, _), (x_test, y_test) = get_preprocessed_data("mnist")
     autoencoder, history = Autoencoder.train(
         {
             "epochs": 3,
@@ -15,12 +15,14 @@ def test_autoencoder():
             "optimizer": "adam",
             "loss": "mean_squared_error",
         },
-        train_data[:10000],
+        train_data,
         return_learning_progress=True,
     )
     graph_training_history([("autoencoder", history)], keys=["loss"])
-    predictions = autoencoder.predict(test_data)
-    display(test_data, predictions, n=20)
+    predictions = autoencoder.predict(x_test[:100])
+    display(x_test, predictions, n=20)
+    encoder_output = autoencoder._encoder(x_test[:1000])
+    tsne_plot(np.squeeze(encoder_output), y_test[:1000])
 
 
 def test_supervised_classifier():

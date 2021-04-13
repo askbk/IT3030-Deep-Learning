@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import tensorflow as tf
 import numpy as np
+from sklearn.manifold import TSNE
 from typing import Sequence, Tuple
 from itertools import chain
 
@@ -54,4 +55,17 @@ def display(array1, array2, n=10):
         ax.get_xaxis().set_visible(False)
         ax.get_yaxis().set_visible(False)
 
+    plt.show()
+
+
+def tsne_plot(latent_vectors, y):
+    def one_hot_to_index(arr):
+        for i, el in enumerate(arr):
+            if el > 0:
+                return i
+        raise Exception
+
+    embedded = TSNE(n_components=2).fit_transform(latent_vectors)
+    labels = np.array([one_hot_to_index(case) for case in y])
+    scatter = plt.scatter(embedded[:, 0], embedded[:, 1], c=labels)
     plt.show()
