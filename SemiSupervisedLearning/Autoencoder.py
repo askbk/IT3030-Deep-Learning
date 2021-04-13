@@ -20,6 +20,9 @@ class Encoder(keras.Model):
     def call(self, inputs):
         return reduce(lambda data, layer: layer(data), self._layers, inputs)
 
+    def freeze_weights(self):
+        self.trainable = False
+
 
 class Decoder(keras.Model):
     def __init__(self):

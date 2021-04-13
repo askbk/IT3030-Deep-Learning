@@ -57,6 +57,7 @@ def test_semi_supervised_classifier():
             "batch_size": 32,
             "optimizer": "adam",
             "loss": "categorical_crossentropy",
+            "freeze_encoder": False,
         },
         x1_train[:10000],
         (x2_train[:10000], y2_train[:10000]),

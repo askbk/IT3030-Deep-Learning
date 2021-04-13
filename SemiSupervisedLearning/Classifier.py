@@ -15,9 +15,13 @@ class ClassifierHead(keras.Model):
 
 
 class Classifier(keras.Model):
-    def __init__(self, encoder=None, classifier_head=None):
+    def __init__(
+        self, encoder=None, classifier_head=None, freeze_encoder_weights=False
+    ):
         super(Classifier, self).__init__()
         self._encoder = Encoder() if encoder is None else encoder
+        if freeze_encoder_weights:
+            self._encoder.freeze_weights()
         self._classifier_head = (
             ClassifierHead() if classifier_head is None else classifier_head
         )
@@ -55,7 +59,10 @@ class Classifier(keras.Model):
         return_learning_progress=False,
     ):
         autoencoder = Autoencoder.train(autoencoder_config, unlabeled_training_set)
-        classifier = Classifier(encoder=autoencoder._encoder)
+        classifier = Classifier(
+            encoder=autoencoder._encoder,
+            freeze_encoder_weights=classifier_config.get("freeze_encoder", False),
+        )
         classifier.compile(
             loss=classifier_config.get("loss"),
             optimizer=classifier_config.get("optimizer"),
