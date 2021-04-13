@@ -24,6 +24,9 @@ def load_dataset(dataset_name: str):
     if dataset_name == "mnist":
         return datasets.mnist.load_data()
 
+    if dataset_name == "fashion_mnist":
+        return datasets.fashion_mnist.load_data()
+
 
 def get_preprocessed_data(
     dataset: str, semi_supervised_split=False, labeled_fraction: float = None

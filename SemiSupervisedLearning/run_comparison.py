@@ -14,7 +14,7 @@ def comparison(config_path):
         x_test_labeled,
         y_test_labeled,
     ) = get_preprocessed_data(
-        "mnist",
+        config.get("dataset", "mnist"),
         semi_supervised_split=True,
         labeled_fraction=config.get("labeled_fraction"),
     )

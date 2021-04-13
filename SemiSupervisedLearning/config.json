@@ -1,5 +1,5 @@
 {
-  "dataset": "mnist",
+  "dataset": "fashion_mnist",
   "labeled_fraction": 0.1,
   "labeled_split": [0.7, 0.2, 0.1],
   "autoencoder": {
