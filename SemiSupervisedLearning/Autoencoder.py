@@ -53,7 +53,7 @@ class Autoencoder(keras.Model):
         return self._decoder(self._encoder(inputs))
 
     @staticmethod
-    def train(config: dict, unlabeled, return_learning_progress=False):
+    def train(config: dict, unlabeled, return_learning_progress=False, tsne_plot=False):
         autoencoder = Autoencoder()
         autoencoder.compile(
             loss=config.get("loss"),

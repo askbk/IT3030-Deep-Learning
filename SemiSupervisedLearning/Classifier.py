@@ -1,5 +1,6 @@
 from functools import reduce
 import tensorflow as tf
+import numpy as np
 import tensorflow.keras as keras
 from Utils import get_optimizer
 from Visualization import graph_training_history
@@ -60,8 +61,11 @@ class Classifier(keras.Model):
         unlabeled_training_set,
         labeled_training_set,
         return_learning_progress=False,
+        tsne_plot=False,
     ):
-        autoencoder = Autoencoder.train(autoencoder_config, unlabeled_training_set)
+        autoencoder = Autoencoder.train(
+            autoencoder_config, unlabeled_training_set, tsne_plot=tsne_plot
+        )
         classifier = Classifier(
             encoder=autoencoder._encoder,
             freeze_encoder_weights=classifier_config.get("freeze_encoder", False),
@@ -77,6 +81,10 @@ class Classifier(keras.Model):
 
         x, y = labeled_training_set
 
+        if tsne_plot:
+            encoder_output = autoencoder._encoder(x[:200])
+            tsne_plot(np.squeeze(encoder_output), y[:200])
+
         history = classifier.fit(
             x,
             y,
@@ -84,6 +92,9 @@ class Classifier(keras.Model):
             epochs=classifier_config.get("epochs"),
             validation_split=0.1,
         )
+        if tsne_plot:
+            encoder_output = classifier._autoencoder._encoder(x[:200])
+            tsne_plot(np.squeeze(encoder_output), y[:200])
         if return_learning_progress:
             return history
         return classifier
