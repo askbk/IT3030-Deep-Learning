@@ -9,12 +9,13 @@ def test_autoencoder():
     (train_data, _), (test_data, _) = get_preprocessed_data("mnist")
     autoencoder = Autoencoder.train(
         {
-            "epochs": 1,
+            "epochs": 5,
             "batch_size": 256,
             "optimizer": "adam",
             "loss": "mean_squared_error",
         },
-        train_data,
+        train_data[:10000],
+        display_learning_progress=True,
     )
     predictions = autoencoder.predict(test_data)
     display(test_data, predictions)
@@ -62,6 +63,6 @@ def test_semi_supervised_classifier():
 
 
 if __name__ == "__main__":
-    # test_autoencoder()
+    test_autoencoder()
     # test_supervised_classifier()
-    test_semi_supervised_classifier()
+    # test_semi_supervised_classifier()

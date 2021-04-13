@@ -1,6 +1,7 @@
 from functools import reduce
 import tensorflow as tf
 import tensorflow.keras as keras
+from Visualization import graph_training_history
 
 
 class Encoder(keras.Model):
@@ -48,14 +49,17 @@ class Autoencoder(keras.Model):
         return self._decoder(self._encoder(inputs))
 
     @staticmethod
-    def train(config: dict, unlabeled):
+    def train(config: dict, unlabeled, display_learning_progress=False):
         autoencoder = Autoencoder()
         autoencoder.compile(loss=config.get("loss"), optimizer=config.get("optimizer"))
-        autoencoder.fit(
+        history = autoencoder.fit(
             x=unlabeled,
             y=unlabeled,
             epochs=config.get("epochs"),
             batch_size=config.get("batch_size"),
             shuffle=True,
+            validation_split=0.1,
         )
+        if display_learning_progress:
+            graph_training_history([history])
         return autoencoder
