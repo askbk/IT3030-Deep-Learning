@@ -69,7 +69,8 @@ class Classifier(keras.Model):
         classifier.compile(
             loss=classifier_config.get("loss"),
             optimizer=get_optimizer(
-                config.get("optimizer", "adam"), config.get("learning_rate", 0.001)
+                classifier_config.get("optimizer", "adam"),
+                classifier_config.get("learning_rate", 0.001),
             ),
             metrics=["accuracy"],
         )
