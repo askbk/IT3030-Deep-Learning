@@ -48,8 +48,8 @@ def test_semi_supervised_classifier():
             "loss": "mean_squared_error",
         },
         {
-            "epochs": 1,
-            "batch_size": 256,
+            "epochs": 2,
+            "batch_size": 32,
             "optimizer": "adam",
             "loss": "categorical_crossentropy",
         },
