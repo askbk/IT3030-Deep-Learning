@@ -1,6 +1,7 @@
 from functools import reduce
 import tensorflow as tf
 import tensorflow.keras as keras
+from Utils import get_optimizer
 from Visualization import graph_training_history
 from Autoencoder import Encoder, Autoencoder
 
@@ -34,7 +35,9 @@ class Classifier(keras.Model):
         classifier = Classifier()
         classifier.compile(
             loss=config.get("loss"),
-            optimizer=config.get("optimizer"),
+            optimizer=get_optimizer(
+                config.get("optimizer", "adam"), config.get("learning_rate", 0.001)
+            ),
             metrics=["accuracy"],
         )
         x, y = training_set
@@ -65,7 +68,9 @@ class Classifier(keras.Model):
         )
         classifier.compile(
             loss=classifier_config.get("loss"),
-            optimizer=classifier_config.get("optimizer"),
+            optimizer=get_optimizer(
+                config.get("optimizer", "adam"), config.get("learning_rate", 0.001)
+            ),
             metrics=["accuracy"],
         )
 

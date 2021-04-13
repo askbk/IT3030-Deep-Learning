@@ -49,3 +49,14 @@ def get_preprocessed_data(
         x_test_labeled,
         y_test_labeled,
     )
+
+
+def get_optimizer(optimizer_name, learning_rate):
+    if optimizer_name == "adam":
+        return keras.optimizers.Adam(learning_rate=learning_rate)
+    if optimizer_name == "sgd":
+        return keras.optimizers.SGD(learning_rate=learning_rate)
+    if optimizer_name == "adagrad":
+        return keras.optimizers.Adagrad(learning_rate=learning_rate)
+    if optimizer_name == "rms":
+        return keras.optimizers.RMSprop(learning_rate=learning_rate)

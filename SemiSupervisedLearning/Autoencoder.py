@@ -2,6 +2,7 @@ from functools import reduce
 import tensorflow as tf
 import tensorflow.keras as keras
 from Visualization import graph_training_history
+from Utils import get_optimizer
 
 
 class Encoder(keras.Model):
@@ -54,7 +55,12 @@ class Autoencoder(keras.Model):
     @staticmethod
     def train(config: dict, unlabeled, return_learning_progress=False):
         autoencoder = Autoencoder()
-        autoencoder.compile(loss=config.get("loss"), optimizer=config.get("optimizer"))
+        autoencoder.compile(
+            loss=config.get("loss"),
+            optimizer=get_optimizer(
+                config.get("optimizer", "adam"), config.get("learning_rate", 0.001)
+            ),
+        )
         history = autoencoder.fit(
             x=unlabeled,
             y=unlabeled,
