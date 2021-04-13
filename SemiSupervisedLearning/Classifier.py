@@ -26,7 +26,7 @@ class Classifier(keras.Model):
         return self._classifier_head(self._encoder(inputs))
 
     @staticmethod
-    def train_supervised(config: dict, training_set, display_learning_progress=False):
+    def train_supervised(config: dict, training_set, return_learning_progress=False):
         classifier = Classifier()
         classifier.compile(
             loss=config.get("loss"),
@@ -41,8 +41,8 @@ class Classifier(keras.Model):
             epochs=config.get("epochs"),
             validation_split=0.1,
         )
-        if display_learning_progress:
-            graph_training_history([("supervised", history)], keys=["accuracy"])
+        if return_learning_progress:
+            return history
 
         return classifier
 
@@ -52,7 +52,7 @@ class Classifier(keras.Model):
         classifier_config: dict,
         unlabeled_training_set,
         labeled_training_set,
-        display_learning_progress=False,
+        return_learning_progress=False,
     ):
         autoencoder = Autoencoder.train(autoencoder_config, unlabeled_training_set)
         classifier = Classifier(encoder=autoencoder._encoder)
@@ -71,6 +71,6 @@ class Classifier(keras.Model):
             epochs=classifier_config.get("epochs"),
             validation_split=0.1,
         )
-        if display_learning_progress:
-            graph_training_history([("semisupervised", history)], keys=["accuracy"])
+        if return_learning_progress:
+            return history
         return classifier

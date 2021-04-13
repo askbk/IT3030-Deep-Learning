@@ -49,7 +49,7 @@ class Autoencoder(keras.Model):
         return self._decoder(self._encoder(inputs))
 
     @staticmethod
-    def train(config: dict, unlabeled, display_learning_progress=False):
+    def train(config: dict, unlabeled, return_learning_progress=False):
         autoencoder = Autoencoder()
         autoencoder.compile(loss=config.get("loss"), optimizer=config.get("optimizer"))
         history = autoencoder.fit(
@@ -60,6 +60,6 @@ class Autoencoder(keras.Model):
             shuffle=True,
             validation_split=0.1,
         )
-        if display_learning_progress:
-            graph_training_history([("autoencoder", history)], keys=["loss"])
+        if return_learning_progress:
+            return history
         return autoencoder
